@@ -4,8 +4,13 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryVariant">@color/blue</item>
+        <item name="android:statusBarColor">@color/blue</item>
+
         <item name="colorSecondary">@color/white</item>
+        <item name="colorSecondaryVariant">@color/white</item>
     </style>
 
     <style name="Theme.DeckVault" parent="Base.Theme.DeckVault" />
+
 </resources>
