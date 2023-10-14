@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:title="Home"
+        android:id="@+id/home_bn"
+        android:icon="@drawable/home"/>
+    <item
+        android:title="Decks"
+        android:id="@+id/decks_bn"
+        android:icon="@drawable/cards"/>
+    <item
+        android:title="Camera"
+        android:id="@+id/camera_bn"
+        android:icon="@drawable/camera"/>
+    <item
+        android:title="Settings"
+        android:id="@+id/settings_bn"
+        android:icon="@drawable/settings"/>
+</menu>
