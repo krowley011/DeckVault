@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "389680106437",
+    "project_id": "deckvault-a0189",
+    "storage_bucket": "deckvault-a0189.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389680106437:android:368f192039e2d29b3599ac",
+        "android_client_info": {
+          "package_name": "com.example.deckvault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5ATFq-acGbr8FiumiZbyhcThg-HXYbYQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

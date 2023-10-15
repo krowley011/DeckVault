@@ -4,7 +4,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var buttonLogin: Button
@@ -16,7 +15,7 @@ class MainActivity : AppCompatActivity() {
 
         buttonLogin = findViewById(R.id.login_btn)
         buttonLogin.setOnClickListener {
-            val i = Intent(this, HomePage::class.java)
+            val i = Intent(this, NavigationActiviy::class.java)
             startActivity(i)
         }
     }
