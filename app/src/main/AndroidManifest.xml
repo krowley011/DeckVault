@@ -2,13 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- below line is use to add camera feature in our app -->
+    <!-- App will require camera -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
 
-    <!-- permission for internet -->
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.hardware.camera2.full" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +23,7 @@
         android:theme="@style/Theme.DeckVault"
         tools:targetApi="31">
         <activity
-            android:name=".NavigationActiviy"
+            android:name=".NavigationActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"
