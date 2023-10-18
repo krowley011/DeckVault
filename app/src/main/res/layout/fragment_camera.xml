@@ -6,14 +6,35 @@
     android:layout_height="match_parent"
     tools:context=".CameraFragment">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextureView
-            android:id="@+id/cameraTextureView"
+        <androidx.camera.view.PreviewView
+            android:id="@+id/cameraPreview"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </RelativeLayout>
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+        </androidx.camera.view.PreviewView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/camera_FAB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@color/black"
+            android:clickable="true"
+            android:contentDescription="Take picture"
+            android:scaleX="1.25"
+            android:scaleY="1.25"
+            app:backgroundTint="@color/blue"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@drawable/camera" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
