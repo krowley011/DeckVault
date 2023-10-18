@@ -28,7 +28,7 @@ class CameraFragment : Fragment() {
     ): View? {
         binding = FragmentCameraBinding.inflate(inflater, container, false)
         if (allPermissionsGranted()) {
-            Toast.makeText(requireContext(), "We have permission.", Toast.LENGTH_SHORT).show()
+            startCamera()
         } else {
             ActivityCompat.requestPermissions(
                 requireActivity(), Constants.REQUIRED_PERMISSIONS,
