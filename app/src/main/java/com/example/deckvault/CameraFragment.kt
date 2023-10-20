@@ -1,6 +1,5 @@
 package com.example.deckvault
 
-import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -15,7 +14,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.example.deckvault.databinding.ActivityMainBinding
 import com.example.deckvault.databinding.FragmentCameraBinding
 
 
@@ -67,6 +65,7 @@ class CameraFragment : Fragment() {
     }
 
 
+    @Deprecated("Deprecated in Java")
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
