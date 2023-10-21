@@ -1,5 +1,6 @@
 package com.example.deckvault
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -27,6 +28,8 @@ class SettingsFragment : Fragment() {
         val logoutBTN = view?.findViewById<Button>(R.id.logout_btn)
         logoutBTN?.setOnClickListener {
             auth.signOut()
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            startActivity(intent)
         }
     }
 }

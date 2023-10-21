@@ -14,11 +14,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 class SignInActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
+    private lateinit var database : DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
@@ -53,7 +57,18 @@ class SignInActivity : AppCompatActivity() {
         if (task.isSuccessful) {
             val account: GoogleSignInAccount? = task.result
             if (account != null) {
-                updateUI(account)
+                val name = account.displayName
+                val email = account.email
+                val userID = account.id
+
+                val databaseReference = FirebaseDatabase.getInstance().getReference("Users/$userID")
+                val user = UserClass(name, email, userID)
+
+                databaseReference.setValue(user).addOnCompleteListener { databaseTask ->
+                    if (databaseTask.isSuccessful) {
+                        updateUI(account)
+                    }
+                }
             }
         } else {
             Toast.makeText(this, task.exception.toString(), Toast.LENGTH_SHORT).show()
@@ -64,8 +79,8 @@ class SignInActivity : AppCompatActivity() {
         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
         auth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
-                val intent: Intent = Intent(this, NavigationActivity::class.java)
-                intent.putExtra("name", account.displayName)
+                val intent = Intent(this, NavigationActivity::class.java)
+
                 startActivity(intent)
             } else {
                 Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
