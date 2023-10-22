@@ -21,7 +21,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintVertical_bias="0.0"
             app:srcCompat="@drawable/rectangle" />
 
         <androidx.appcompat.widget.Toolbar
@@ -37,10 +37,10 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/decksTV"
+            android:id="@+id/deskNameTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Decks"
+            android:text="Deck Name"
             android:textColor="#FFFFFF"
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
@@ -48,31 +48,6 @@
             app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/toolbar" />
-
-        <TextView
-            android:id="@+id/deckCountTV"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="16dp"
-            android:text="You have 0 decks"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
-
-        <ImageButton
-            android:id="@+id/deckMenuBTN"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="24dp"
-            android:background="#00FFFFFF"
-            android:contentDescription="Options"
-            android:scaleX="2"
-            android:scaleY="2"
-            android:src="@drawable/menu"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
 
         <androidx.recyclerview.widget.RecyclerView
 
@@ -86,10 +61,24 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/deckCountTV" />
+            app:layout_constraintTop_toBottomOf="@+id/cardMenuBTN" />
 
         <ImageButton
-            android:id="@+id/deckSearchBTN"
+            android:id="@+id/cardMenuBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="24dp"
+            android:background="#00FFFFFF"
+            android:contentDescription="Options"
+            android:scaleX="2"
+            android:scaleY="2"
+            android:src="@drawable/menu"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/rectangle" />
+
+        <ImageButton
+            android:id="@+id/SDSearchBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
@@ -98,8 +87,34 @@
             android:scaleX="2.5"
             android:scaleY="2.5"
             android:src="@drawable/search"
+            app:tint="#FFFFFF"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/cardAmountTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="0 cards"
+            android:textSize="20sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/rectangle" />
+
+        <ImageButton
+            android:id="@+id/SDBackBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:background="#00FFFFFF"
+            android:contentDescription="Back"
+            android:scaleX="2.5"
+            android:scaleY="2.5"
+            android:src="@drawable/baseline_arrow_back_24"
+            app:layout_constraintBottom_toTopOf="@+id/rectangle"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#FFFFFF" />
 

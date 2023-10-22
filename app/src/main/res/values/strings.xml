@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">DeckVault</string>
     <string name="default_web_client_id">389680106437-l8uoqrc1i5nc496to26jd1pm1fr9h57d.apps.googleusercontent.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

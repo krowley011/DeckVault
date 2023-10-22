@@ -12,6 +12,6 @@ data class CardClass (
     var cardAction: String? = null,
     val cardInk: Int? = null,
     val cardInkable: Boolean,
-    val cardLord: Int? = null,
+    val cardLore: Int? = null,
     var cardDescription: String? = null
 )
