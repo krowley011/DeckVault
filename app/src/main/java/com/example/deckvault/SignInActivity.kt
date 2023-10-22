@@ -21,7 +21,6 @@ class SignInActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private lateinit var googleSignInClient: GoogleSignInClient
-    private lateinit var database : DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,18 +56,7 @@ class SignInActivity : AppCompatActivity() {
         if (task.isSuccessful) {
             val account: GoogleSignInAccount? = task.result
             if (account != null) {
-                val name = account.displayName
-                val email = account.email
-                val userID = account.id
-
-                val databaseReference = FirebaseDatabase.getInstance().getReference("Users/$userID")
-                val user = UserClass(name, email, userID)
-
-                databaseReference.setValue(user).addOnCompleteListener { databaseTask ->
-                    if (databaseTask.isSuccessful) {
-                        updateUI(account)
-                    }
-                }
+                updateUI(account)
             }
         } else {
             Toast.makeText(this, task.exception.toString(), Toast.LENGTH_SHORT).show()
@@ -80,7 +68,6 @@ class SignInActivity : AppCompatActivity() {
         auth.signInWithCredential(credential).addOnCompleteListener {
             if (it.isSuccessful) {
                 val intent = Intent(this, NavigationActivity::class.java)
-
                 startActivity(intent)
             } else {
                 Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
