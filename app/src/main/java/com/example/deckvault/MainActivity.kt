@@ -8,11 +8,9 @@ import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var buttonLogin: Button
 
     // Firebase elements
     private lateinit var auth: FirebaseAuth
-    //private lateinit var database: FirebaseDatabase
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
