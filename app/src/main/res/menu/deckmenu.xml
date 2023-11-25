@@ -5,16 +5,16 @@
     <item
         android:title="Sort By"
         android:id="@+id/DeckMenu_SortBy"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:title="Select"
         android:id="@+id/DeckMenu_Select"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
     <item
         android:title="Add Deck"
         android:id="@+id/DeckMenu_AddDeck"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 
 </menu>

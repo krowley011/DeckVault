@@ -72,7 +72,7 @@
             android:scaleY="2"
             android:src="@drawable/menu"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
+            app:layout_constraintTop_toTopOf="@+id/rectangle"/>
 
         <androidx.recyclerview.widget.RecyclerView
 
