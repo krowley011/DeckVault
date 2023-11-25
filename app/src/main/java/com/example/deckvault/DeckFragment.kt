@@ -4,11 +4,15 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deckvault.databinding.ActivityMainBinding
+
 
 
 class DeckFragment : Fragment() {
@@ -21,9 +25,11 @@ class DeckFragment : Fragment() {
 
         deckListRecycler = rootView.findViewById(R.id.decksRecylView)
         populateDecks()
+        setHasOptionsMenu(true)
 
         return rootView
     }
+
 
     private fun populateDecks() {
         val deckList = ArrayList<Deck>()

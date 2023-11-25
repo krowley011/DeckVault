@@ -4,6 +4,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import com.google.firebase.auth.FirebaseAuth
 
@@ -31,4 +33,23 @@ class MainActivity : AppCompatActivity() {
             }
         }, 1500)
     }
+
+    // Deck Menu Button setup
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+            menuInflater.inflate(R.menu.deckmenu, menu)
+            return true
+    }
+
+    //Deck Menu click events
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.deckMenuBTN -> {
+                    // Handle the click on the menu item
+                    // Perform the desired action here
+                    true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
 }

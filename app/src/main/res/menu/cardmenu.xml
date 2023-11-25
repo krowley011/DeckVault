@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:title="Move Card"
+        android:id="@+id/Card_Move"/>
+    <item
+        android:title="CopyMenu_Card"
+        android:id="@+id/CardMenu_Copy"/>
+    <item
+        android:title="Delete Card"
+        android:id="@+id/CardMenu_Delete"/>
+</menu>
