@@ -1,5 +1,6 @@
 package com.example.deckvault
 
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,13 +10,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deckvault.databinding.ActivityMainBinding
-
 
 
 class DeckFragment : Fragment() {
@@ -41,12 +42,22 @@ class DeckFragment : Fragment() {
             popup.setOnMenuItemClickListener { menuItem ->
                 // Handle menu item click events here
                 when (menuItem.itemId) {
-                    // Handle each menu item's click
+                    R.id.DeckMenu_AddDeck -> {
+                    showAddDeckDialog()
+                    }
                 }
                 true
             }
             popup.show()
         }
+    }
+
+    private fun showAddDeckDialog() {
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.adddeck_dialog)
+        dialog.show()
     }
 
     private fun populateDecks() {
