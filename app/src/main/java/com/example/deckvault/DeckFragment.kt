@@ -14,6 +14,7 @@ import android.view.Window
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.PopupMenu
+import androidx.compose.ui.graphics.Color
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deckvault.databinding.ActivityMainBinding
@@ -57,6 +58,8 @@ class DeckFragment : Fragment() {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setCancelable(true)
         dialog.setContentView(R.layout.adddeck_dialog)
+        dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_dialog)
+
         dialog.show()
     }
 
