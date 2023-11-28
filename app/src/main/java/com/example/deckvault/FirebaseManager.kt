@@ -1,6 +1,5 @@
 package com.example.deckvault
 
-import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
@@ -120,7 +119,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 
         fun removeCard(card: CardClass, owner: LifecycleOwner) {
             val database = FirebaseDatabase.getInstance()
-            val cardRef = database.reference.child("UserData").child(this.user.userID).child("Cards").child(card.cardNumber.toString())
+            val cardRef = database.reference.child("UserData").child(user.userID).child("Cards").child(card.cardNumber.toString())
             cardRef.removeValue()
 
             // update user's card count
@@ -222,6 +221,69 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 //            val userDataRef = database.getReference("UserData").child(user.userID).child("Cards")
 //           userDataRef.child(card.cardNumber.toString()).child("IsFavorite").setValue(card.isFav)
 //        }
+
+        fun addTestCards(owner: LifecycleOwner) {
+            val cardDataRef = database.getReference("UserData").child(user.userID).child("Cards")
+
+            // Add test cards here
+            val testCards = mutableListOf<CardClass>(
+                createCard(
+                    "Donald Duck",
+                    "PlaceholderURL",
+                    13,
+                    "Musketeer",
+                    "Steel",
+                    "Dreamborn, Hero, Musketeer",
+                    2,
+                    5,
+                    "Stay Alert! During your turn, your Musketeer characters " +
+                            "gain Evasive. (They can challenge characters with Evasive.)",
+                    4,
+                    true,
+                    1,
+                    "Bodyguard (This character may enter play exerted. An opposing " +
+                        "character who challenges one of your characters must choose one with " +
+                            "Bodyguard if able.)" ),
+                createCard(
+                    "Merlin",
+                    "PlaceholderURL",
+                    52,
+                    "Rabbit",
+                    "Amethyst",
+                    "Storyborn, Mentor, Sorceror",
+                    2,
+                    3,
+                    "Hoppity Hip! When you play this character and when he leaves play, " +
+                            "you may draw a card.",
+                    4,
+                    false,
+                    1,
+                    "It was turning out to be a bad hare day.")
+                // Add as many test cards as needed
+            )
+
+            for (card in testCards) {
+                cardDataRef.child(card.cardNumber.toString()).setValue(card)
+            }
+
+            // Update user's card count after adding test cards
+            val userDataRepo = UserDataRepository(database, user.userID)
+            userDataRepo.userData.observe(owner) { userProfile ->
+                var cardCount = user.cardCount + testCards.size
+                userDataRepo.updateUserData(user.userID, user.userEmail, cardCount, user.deckCount, user.userID)
+                userDataRepo.stopProfileListener()
+            }
+        }
+
+        fun createCard(name: String, imageUrl: String, number: Int, subName: String, color: String,
+            types: String, damage: Int, defense: Int, action: String, ink: Int, inkable: Boolean,
+            lore: Int, description: String): CardClass {
+
+            val cardTypes = types.split(", ").toMutableList()
+
+            return CardClass(name, imageUrl, number, subName, color, cardTypes, damage, defense,
+                action, ink, inkable, lore, description)
+        }
 
         fun stopCardListener()
         {
