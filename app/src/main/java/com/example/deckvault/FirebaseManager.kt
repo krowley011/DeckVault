@@ -1,10 +1,7 @@
 package com.example.deckvault
 
-import android.content.Context
-import android.content.Intent
+import android.net.Uri
 import android.util.Log
-import android.widget.Toast
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -14,6 +11,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.FirebaseStorage
+import java.io.File
 
 class UserDataRepository(private val database: FirebaseDatabase, private val userId: String) {
     private val _userData = MutableLiveData<UserClass>()
@@ -95,7 +94,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 //        }
 //    }
 
-    fun stopProfileListener() {
+    fun stopUserListener() {
         listener?.let {
             val userDataRef = database.getReference("UserData").child(userId)
                 .child("User")
@@ -105,8 +104,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
     }
 }
 
-    class CardRepository(private val database: FirebaseDatabase, private val user: UserClass)
-    {
+    class CardRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
         public var Decks = mutableListOf<CardClass>()
         private val _isCardDataReady = MutableLiveData<Boolean>()
         val isCardDataReady: LiveData<Boolean>
@@ -114,48 +112,62 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 
         private var listener: ValueEventListener? = null
 
-        init
-        {
+        init {
             fetchCardData()
         }
 
         fun removeCard(card: CardClass, owner: LifecycleOwner) {
             val database = FirebaseDatabase.getInstance()
-            val cardRef = database.reference.child("UserData").child(user.userID).child("Cards").child(card.cardNumber.toString())
+            val cardRef = database.reference.child("UserData").child(user.uid).child("Cards")
+                .child(card.cardNumber.toString())
             cardRef.removeValue()
 
             // update user's card count
-            val userDataRepo = UserDataRepository(database, user.userID)
+            val userDataRepo = UserDataRepository(database, user.uid)
             userDataRepo.userData.observe(owner) { user ->
                 var cardCount = user.cardCount
                 cardCount--
-                userDataRepo.updateUserData(user.userName, user.userEmail, user.cardCount, user.deckCount, user.userID)
-                userDataRepo.stopProfileListener()
+                userDataRepo.updateUserData(
+                    user.userName,
+                    user.userEmail,
+                    user.cardCount,
+                    user.deckCount,
+                    user.userID
+                )
+                userDataRepo.stopUserListener()
             }
         }
 
-        fun fetchCardData()
-        {
-            val profileDataRef = database.getReference("UserData").child(user.userID).child("Cards")
+        fun fetchCardData() {
+            val profileDataRef = database.getReference("UserData").child(user.uid).child("Cards")
             Decks.clear()
-            listener = object : ValueEventListener
-            {
+            listener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     _isCardDataReady.postValue(false) // inform the caller the list is not ready
                     for (cardSnapshot in dataSnapshot.children) {
                         var cardName = cardSnapshot.child("Card Name").value as? String ?: ""
                         var cardImage = cardSnapshot.child("Card Image").value as? String ?: ""
-                        val cardNumber = (cardSnapshot.child("Card Number").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
+                        val cardNumber = (cardSnapshot.child("Card Number").value as? Long)?.toInt()
+                            ?: 0 // Cast to Int or provide a default value if null
                         var cardSubName = cardSnapshot.child("Card SubName").value as? String ?: ""
                         var cardColor = cardSnapshot.child("Card Color").value as? String ?: ""
-                        var cardClasses = cardSnapshot.child("Card Classes").value as? MutableList<String> ?: mutableListOf()
-                        val cardDamage = (cardSnapshot.child("Card Damage").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
-                        val cardDefense = (cardSnapshot.child("Card Defense").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
+                        var cardClasses =
+                            cardSnapshot.child("Card Classes").value as? MutableList<String>
+                                ?: mutableListOf()
+                        val cardDamage = (cardSnapshot.child("Card Damage").value as? Long)?.toInt()
+                            ?: 0 // Cast to Int or provide a default value if null
+                        val cardDefense =
+                            (cardSnapshot.child("Card Defense").value as? Long)?.toInt()
+                                ?: 0 // Cast to Int or provide a default value if null
                         var cardAction = cardSnapshot.child("Card Action").value as? String ?: ""
-                        val cardInk = (cardSnapshot.child("Card Ink").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
-                        val cardInkable = cardSnapshot.child("Card Inkable").value as? Boolean ?: false // Provide a default value if null
-                        val cardLore = (cardSnapshot.child("Card Lore").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
-                        var cardDescription = cardSnapshot.child("Card Description").value as? String ?: ""
+                        val cardInk = (cardSnapshot.child("Card Ink").value as? Long)?.toInt()
+                            ?: 0 // Cast to Int or provide a default value if null
+                        val cardInkable = cardSnapshot.child("Card Inkable").value as? Boolean
+                            ?: false // Provide a default value if null
+                        val cardLore = (cardSnapshot.child("Card Lore").value as? Long)?.toInt()
+                            ?: 0 // Cast to Int or provide a default value if null
+                        var cardDescription =
+                            cardSnapshot.child("Card Description").value as? String ?: ""
 
                         var card = CardClass(
                             cardName,
@@ -177,45 +189,62 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
                     _isCardDataReady.postValue(true) // inform the caller we have filled the list with each book
                 }
 
-                override fun onCancelled(error: DatabaseError) { }
+                override fun onCancelled(error: DatabaseError) {}
             }
             profileDataRef.addListenerForSingleValueEvent(listener!!)
         }
 
-        fun updateCardData(card: CardClass)
-        {
-            val cardDataRef = database.getReference("UserData").child(user.userID).child("Cards").child(card.cardNumber.toString())
+//        fun updateCardData(card: CardClass)
+//        {
+//            val cardDataRef = database.getReference("UserData").child(user.uid).child("Cards").child(card.cardNumber.toString())
+//
+//            // Will need to add functionality here if I allow the user to change the card data
+//        }
 
-            // Will need to add functionality here if I allow the user to change the card data
-        }
 
-        fun addCard(card: CardClass, owner: LifecycleOwner)
-        {
-            val cardDataRef = database.getReference("UserData").child(user.userID).child("Cards")
+        fun addCard(card: CardClass, owner: LifecycleOwner) {
+            val cardDataRef = database.getReference("UserData").child(user.uid).child("Cards")
+
             cardDataRef.child(card.cardNumber.toString()).child("Card Name").setValue(card.cardName)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Image").setValue(card.cardImage)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Number").setValue(card.cardNumber)
-            cardDataRef.child(card.cardNumber.toString()).child("Card SubName").setValue(card.cardSubName)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Color").setValue(card.cardColor)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Classes").setValue(card.cardClasses)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Damage").setValue(card.cardDamage)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Defense").setValue(card.cardDefense)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Action").setValue(card.cardAction)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Image")
+                .setValue(card.cardImage)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Number")
+                .setValue(card.cardNumber)
+            cardDataRef.child(card.cardNumber.toString()).child("Card SubName")
+                .setValue(card.cardSubName)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Color")
+                .setValue(card.cardColor)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Classes")
+                .setValue(card.cardClasses)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Damage")
+                .setValue(card.cardDamage)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Defense")
+                .setValue(card.cardDefense)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Action")
+                .setValue(card.cardAction)
             cardDataRef.child(card.cardNumber.toString()).child("Card Ink").setValue(card.cardInk)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Inkable").setValue(card.cardInkable)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Inkable")
+                .setValue(card.cardInkable)
             cardDataRef.child(card.cardNumber.toString()).child("Card Lore").setValue(card.cardLore)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Description").setValue(card.cardDescription)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Description")
+                .setValue(card.cardDescription)
 
-            // update user's book count
-            val userDataRepo = UserDataRepository(database, user.userID)
+            // update user's card count
+            val userDataRepo = UserDataRepository(database, user.uid)
             userDataRepo.userData.observe(owner) { userProfile ->
-                var cardCount = user.cardCount
-                cardCount++
-                userDataRepo.updateUserData(user.userID, user.userEmail, user.cardCount, user.deckCount, user.userID)
-                userDataRepo.stopProfileListener()
-            }
+                userProfile?.let { user ->
+                    var cardCount = user.cardCount
+                        ?: 0 // Fetch the current card count from the observed user profile
+                    cardCount++ // Increment the card count
 
+                    // Update only the card count for the user
+                    val userDataRef = database.getReference("UserData").child("userID")
+                    userDataRef.child("Card Count").setValue(cardCount)
+                    userDataRepo.stopUserListener()
+                }
+            }
         }
+
 
         //For adding favorite functionality to cards
 //        fun updateFavoriteStatus(card: CardClass)
@@ -224,58 +253,77 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 //           userDataRef.child(card.cardNumber.toString()).child("IsFavorite").setValue(card.isFav)
 //        }
 
-        //Adding test cards to test Firebase Database
-        //Will remove after later
-        fun addTestCards(owner: LifecycleOwner) {
-            val cardDataRef = database.getReference("UserData").child(user.userID).child("Cards")
 
-            // Add test cards here
-            val testCards = mutableListOf<CardClass>(
-                createCard(
-                    "Donald Duck",
-                    "PlaceholderURL",
-                    13,
-                    "Musketeer",
-                    "Steel",
-                    "Dreamborn, Hero, Musketeer",
-                    2,
-                    5,
-                    "Stay Alert! During your turn, your Musketeer characters " +
-                            "gain Evasive. (They can challenge characters with Evasive.)",
-                    4,
-                    true,
-                    1,
-                    "Bodyguard (This character may enter play exerted. An opposing " +
-                        "character who challenges one of your characters must choose one with " +
-                            "Bodyguard if able.)" ),
-                createCard(
+        fun initializeCards() {
+            val cardDataRef = FirebaseDatabase.getInstance().getReference("CardData")
+            var imageUrl = ""
+
+            imageUrl = "gs://deckvault-a0189.appspot.com/52.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card52 = CardClass(
                     "Merlin",
-                    "PlaceholderURL",
+                    imageUrl.toString(),
                     52,
                     "Rabbit",
                     "Amethyst",
-                    "Storyborn, Mentor, Sorceror",
+                    mutableListOf("Storyborn", "Mentor", "Sorcerer"),
                     2,
                     3,
-                    "Hoppity Hip! When you play this character and when he leaves play, " +
-                            "you may draw a card.",
+                    "Hoppity Hip! When you play this character and when he leaves play, you may draw a card.",
                     4,
                     false,
                     1,
-                    "It was turning out to be a bad hare day.")
-            )
+                    "It was turning out to be a bad hare day."
+                )
+                cardDataRef.child(card52.cardNumber.toString()).setValue(card52)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
 
-            for (card in testCards) {
-                cardDataRef.child(card.cardNumber.toString()).setValue(card)
-            }
+            imageUrl = "gs://deckvault-a0189.appspot.com/150.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card150 = CardClass(
+                    "Maleficent",
+                    imageUrl.toString(),
+                    150,
+                    "Sinister Visitor",
+                    "Sapphire",
+                    mutableListOf("Storyborn", "Villain", "Sorcerer"),
+                    3,
+                    4,
+                    "",
+                    4,
+                    true,
+                    2,
+                    "The princess shall indeed grow in grace and beauty, beloved by all who know here. " +
+                            " But before the un sets on her sixteenth birthday, she shall prick her finger on the spindle of a " +
+                            "spinning wheel...."
+                )
+                cardDataRef.child(card150.cardNumber.toString()).setValue(card150)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
+        }
 
-            // Update user's card count after adding test cards
-            val userDataRepo = UserDataRepository(database, user.userID)
-            userDataRepo.userData.observe(owner) { userProfile ->
-                var cardCount = user.cardCount + testCards.size
-                userDataRepo.updateUserData(user.userID, user.userEmail, cardCount, user.deckCount, user.userID)
-                userDataRepo.stopProfileListener()
-            }
+
+        //Function to add image url to storage
+        private fun addImage(imageUrl: String, onSuccess: (Uri) -> Unit, onFailure: (Exception) -> Unit) {
+            val storageRef = FirebaseStorage.getInstance().getReferenceFromUrl(imageUrl)
+
+            val localFile = File.createTempFile("images", "jpg")
+
+            storageRef.getFile(localFile)
+                .addOnSuccessListener {
+                    val fileUri = Uri.fromFile(localFile)
+                    onSuccess(fileUri)
+                }
+                .addOnFailureListener { exception ->
+                    onFailure(exception)
+                }
         }
 
         fun createCard(name: String, imageUrl: String, number: Int, subName: String, color: String,
@@ -291,28 +339,160 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         fun stopCardListener()
         {
             listener?.let {
-                val userDataRef = database.getReference("UserData").child(user.userID)
+                val userDataRef = database.getReference("UserData").child(user.uid)
                     .child("Cards")
                 userDataRef.removeEventListener(it)
                 listener = null
             }
         }
+    }
 
-        fun clearUserDecks(owner: LifecycleOwner) {
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            if (currentUser != null) {
-                for (card in Decks) {
-                    removeCard(card, owner)
+class DeckRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
+    public var Decks = mutableListOf<CardClass>()
+    private val _isDeckDataReady = MutableLiveData<Boolean>()
+    val isDeckDataReady: LiveData<Boolean>
+        get() = _isDeckDataReady
+
+    private var listener: ValueEventListener? = null
+
+    init {
+        fetchDeckData()
+    }
+
+    private fun removeDeck(deck: DeckClass, owner: LifecycleOwner) {
+        val database = FirebaseDatabase.getInstance()
+
+        // Reference to the specific deck to be removed
+        val deckRef = database.reference.child("UserData").child(user.uid).child("Deck").child(deck.deckId)
+
+        // Remove the specific deck from the user's decks
+        deckRef.removeValue().addOnCompleteListener { removeTask ->
+            if (removeTask.isSuccessful) {
+                // If the deck is successfully removed, update the user's deck count
+                val userDataRef = database.reference.child("UserData").child(user.uid).child("DeckCount")
+
+                // Get the current user's deck count and decrement it by 1
+                userDataRef.get().addOnSuccessListener { dataSnapshot ->
+                    val currentDeckCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                    val newDeckCount = currentDeckCount - 1
+
+                    // Update the user's deck count in Firebase
+                    userDataRef.setValue(newDeckCount)
+                }.addOnFailureListener { exception ->
+                    // Handle failure to fetch user's deck count
                 }
-                // Signal that the user library has been cleared
-                _isCardDataReady.postValue(true)
             } else {
-                Log.e("CardRepository", "User ID is null. Cannot clear decks.")
-                _isCardDataReady.postValue(false)
+                // Handle failure to remove the deck
+            }
+        }
+    }
+
+
+    private fun fetchDeckData() {
+        val userDataRef = database.getReference("UserData").child(user.uid).child("Decks")
+        Decks.clear()
+
+        listener = object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                _isDeckDataReady.postValue(false) // Inform the caller the list is not ready
+
+                for (deckSnapshot in dataSnapshot.children) {
+                    val deckName = deckSnapshot.child("deckName").value as? String ?: ""
+                    val deckCover = deckSnapshot.child("deckCover").value as? String ?: ""
+                    val deckId = deckSnapshot.child("deckId").value as? String ?: ""
+                    val deckCountCard =
+                        (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
+
+                    val deck = DeckClass(
+                        deckId,
+                        deckCover,
+                        deckName,
+                        deckCountCard
+                    )
+
+                    // Not working
+                    // user.add(deck)
+                }
+
+                _isDeckDataReady.postValue(true) // Inform the caller we have filled the list with each deck
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle cancellation or errors here
             }
         }
 
+        userDataRef.addListenerForSingleValueEvent(listener!!)
     }
+//        fun updateDeckData(deck: DeckClass)
+//        {
+//            val userDataRef = database.getReference("UserData").child(user.uid).child("Decks")
+//
+//            // Will need to add functionality here to allow user to modify decks
+//        }
+
+
+    fun addDeck(deck: DeckClass, owner: LifecycleOwner) {
+        val cardDataRef = database.getReference("UserData").child(user.uid).child("Decks")
+
+        cardDataRef.child(deck.deckName).child("Deck Name").setValue(deck.deckName)
+        cardDataRef.child(deck.deckCover).child("Deck Cover").setValue(deck.deckCover)
+        cardDataRef.child(deck.deckId).child("Deck ID").setValue(deck.deckId)
+        cardDataRef.child(deck.deckCardCount.toString()).child("Deck Card Count")
+            .setValue(deck.deckCardCount)
+
+        // update user's card count
+        val userDataRepo = UserDataRepository(database, user.uid)
+        userDataRepo.userData.observe(owner) { userProfile ->
+            userProfile?.let { user ->
+                var deckCount = user.deckCount
+                    ?: 0 // Fetch the current card count from the observed user profile
+                deckCount++ // Increment the card count
+
+                // Update only the card count for the user
+                val userDataRef = database.getReference("UserData").child("userID")
+                userDataRef.child("Deck Count").setValue(deckCount)
+                userDataRepo.stopUserListener()
+            }
+        }
+    }
+
+
+    //For adding favorite functionality to decks
+//        fun updateFavoriteStatus(deck: DeckClass)
+//       {
+//            val userDataRef = database.getReference("UserData").child(user.userID).child("Decks")
+//           userDataRef.child(deck.deckId).child("IsFavorite").setValue(deck.isFav)
+//        }
+
+
+    fun stopDeckListener() {
+        listener?.let {
+            val userDataRef = database.getReference("UserData").child(user.uid)
+                .child("Decks")
+            userDataRef.removeEventListener(it)
+            listener = null
+        }
+    }
+
+    // Not working
+//    fun clearUserDecks(owner: LifecycleOwner) {
+//        val currentUser = FirebaseAuth.getInstance().currentUser
+//        if (currentUser != null) {
+//            val deckRepository = DeckRepository(database, currentUser)
+//            deckRepository.Decks.forEach { deck ->
+//                deckRepository.removeDeck(deck, owner)
+//            }
+//            // Signal that the user library has been cleared
+//            _isDeckDataReady.postValue(true)
+//        } else {
+//            Log.e("DeckRepository", "User ID is null. Cannot clear decks.")
+//            _isDeckDataReady.postValue(false)
+//        }
+//    }
+
+
+}
 
 class RecentRepository(private val database: FirebaseDatabase, private val username: String, private val friendList: MutableList<CardClass>)
 {

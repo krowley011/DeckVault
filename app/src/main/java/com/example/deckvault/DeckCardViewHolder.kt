@@ -8,10 +8,10 @@ class DeckCardViewHolder(
     private val decksCardBinding: DecksCardviewBinding, // Assuming you have a DeckCardBinding class
     private val clickListener: DeckClickListener
 ) : RecyclerView.ViewHolder(decksCardBinding.root) {
-    fun bindDeck(deck: Deck) {
+    fun bindDeck(deck: DeckClass) {
         decksCardBinding.cardImageView.setImageResource(deck.deckCover.toInt())
         decksCardBinding.deckNameTV.text = deck.deckName
-        decksCardBinding.cardCountTV.text = deck.deckCountCard.toString()
+        decksCardBinding.cardCountTV.text = deck.deckCardCount.toString()
 
         decksCardBinding.root.setOnClickListener {
             clickListener.onClick(deck)

@@ -5,11 +5,11 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
-import androidx.lifecycle.LifecycleOwner
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -23,12 +23,14 @@ class MainActivity : AppCompatActivity() {
 
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
-        val user = auth.currentUser
+        val currUser = auth.currentUser
 
         // If user is signed in, go to home page. If not, go to sign in
         Handler().postDelayed({
-            if (user != null) {
-                getUserData(user)
+            if (currUser != null) {
+                getUserData(currUser)
+                val cardRepo = currUser?.let { CardRepository(FirebaseDatabase.getInstance(), it) }
+                cardRepo!!.initializeCards()
                 val i = Intent(this, NavigationActivity::class.java)
                 startActivity(i)
             } else {
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Function to convert FirebaseUser to UserClass
-    fun mapFirebaseUserToUserClass(firebaseUser: FirebaseUser?): UserClass? {
+    private fun mapFirebaseUserToUserClass(firebaseUser: FirebaseUser?): UserClass? {
         return firebaseUser?.let {
             UserClass(
                 userName = it.displayName ?: "",
@@ -49,18 +51,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getUserData(currentUser: FirebaseUser) {
+    private fun getUserData(currUser: FirebaseUser) {
         val userDatabase = FirebaseDatabase.getInstance().getReference("UserData")
-        userDatabase.child(currentUser.uid).get().addOnSuccessListener { dataSnapshot ->
+        userDatabase.child(currUser.uid).get().addOnSuccessListener { dataSnapshot ->
             if (dataSnapshot.exists()) {
-                val user: UserClass? = mapFirebaseUserToUserClass(currentUser)
+                val user: UserClass? = mapFirebaseUserToUserClass(currUser)
                 val database = FirebaseDatabase.getInstance()
-                val userReference = database.getReference("Users").child(currentUser.uid)
-                val cardRepo = user?.let { CardRepository(database, it) }
+                val userReference = database.getReference("UserData").child(currUser.uid)
+                val cardRepo = user?.let { CardRepository(database, currUser) }
 
-                userReference.child("userName").setValue((currentUser.displayName))
-                userReference.child("email").setValue(currentUser.email)
-                cardRepo?.addTestCards(this)
+                userReference.child("userName").setValue((currUser.displayName))
+                userReference.child("email").setValue(currUser.email)
             }
         }.addOnFailureListener {
             Toast.makeText(this, "Failed to read database.", Toast.LENGTH_SHORT).show()

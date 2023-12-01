@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.deckvault.databinding.DecksCardviewBinding
 
-class DeckCardAdapter(private val deckList: List<Deck>, private val clickListener: DeckClickListener) :
+class DeckCardAdapter(private val deckList: List<DeckClass>, private val clickListener: DeckClickListener) :
     RecyclerView.Adapter<DeckCardViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeckCardViewHolder {

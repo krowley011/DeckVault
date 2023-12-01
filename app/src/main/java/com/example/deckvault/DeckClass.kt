@@ -1,10 +1,9 @@
 package com.example.deckvault
 
-data class Deck (
-    var deckCover: String,
-    var deckName: String,
-    var deckCountCard: Int,
-    val id: Int? = deckList.size
-)
+data class DeckClass (
+        val deckId: String = "",
+        var deckCover: String = "",
+        var deckName: String = "",
+        var deckCardCount: Int = 0,
 
-var deckList = mutableListOf<Deck>()
+)

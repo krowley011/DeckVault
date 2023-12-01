@@ -6,7 +6,7 @@ data class CardClass (
     val cardNumber : Int? = null,
     var cardSubName: String? = null,
     var cardColor: String? = null,
-    var cardClasses: MutableList<String>,
+    var cardClasses: MutableList<String> = mutableListOf(),
     val cardDamage: Int? = null,
     val cardDefense: Int? = null,
     var cardAction: String? = null,

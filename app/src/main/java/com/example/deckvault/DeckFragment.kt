@@ -64,7 +64,7 @@ class DeckFragment : Fragment() {
     }
 
     private fun populateDecks() {
-        val deckList = ArrayList<Deck>()
-        // Populate your deck list
+        val deckList = ArrayList<DeckClass>()
+        // Populate deck list
     }
 }
