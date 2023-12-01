@@ -1,6 +1,10 @@
 package com.example.deckvault
 
+import android.content.Context
+import android.content.Intent
 import android.util.Log
+import android.widget.Toast
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -27,8 +31,6 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         val userDataRef = database.getReference("UserData").child(userId).child("User")
         listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
                 val userName = dataSnapshot.child("Username").getValue(String::class.java) ?: ""
                 val userEmail = dataSnapshot.child("Email").getValue(String::class.java) ?: ""
                 val userId = dataSnapshot.child("UserId").getValue(String::class.java) ?: ""
@@ -53,7 +55,6 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         deckCount: Int,
         userId: String
     ) {
-        // gets the path reference to the profile
         val userDataRef = database.getReference("UserData").child(userId).child("User")
         val userData = HashMap<String, Any>()
         userData["Username"] = userName ?: ""
@@ -65,16 +66,17 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         userDataRef.updateChildren(userData)
     }
 
-//    fun addUser(user: UserClass) {
-//       val userDataRef =
-//            database.getReference("UserData").child(user.userID.toString()).child("User")
-//        userDataRef.child("Name").setValue(user.userName)
-//        userDataRef.child("Email").setValue(user.userEmail)
-//        userDataRef.child("Card Count").setValue(user.cardCount)
-//       userDataRef.child("Deck Count").setValue(user.deckCount)
-//        userDataRef.child("UserId").setValue(user.userID)
-//    }
+    fun addUser(user: UserClass) {
+       val userDataRef =
+            database.getReference("UserData").child(user.userID.toString()).child("User")
+        userDataRef.child("Name").setValue(user.userName)
+        userDataRef.child("Email").setValue(user.userEmail)
+        userDataRef.child("Card Count").setValue(user.cardCount)
+       userDataRef.child("Deck Count").setValue(user.deckCount)
+        userDataRef.child("UserId").setValue(user.userID)
+    }
 
+    //To be used if allowing user to delete account
 //    fun removeUser(username: String)
 //    {
 //        val curUser = FirebaseAuth.getInstance().currentUser // get the current user
@@ -155,7 +157,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
                         val cardLore = (cardSnapshot.child("Card Lore").value as? Long)?.toInt() ?: 0 // Cast to Int or provide a default value if null
                         var cardDescription = cardSnapshot.child("Card Description").value as? String ?: ""
 
-                        var card: CardClass = CardClass(
+                        var card = CardClass(
                             cardName,
                             cardImage,
                             cardNumber,
@@ -222,6 +224,8 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 //           userDataRef.child(card.cardNumber.toString()).child("IsFavorite").setValue(card.isFav)
 //        }
 
+        //Adding test cards to test Firebase Database
+        //Will remove after later
         fun addTestCards(owner: LifecycleOwner) {
             val cardDataRef = database.getReference("UserData").child(user.userID).child("Cards")
 
@@ -259,7 +263,6 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
                     false,
                     1,
                     "It was turning out to be a bad hare day.")
-                // Add as many test cards as needed
             )
 
             for (card in testCards) {
@@ -388,6 +391,4 @@ class RecentRepository(private val database: FirebaseDatabase, private val usern
         }
     }
 
-
 }
-

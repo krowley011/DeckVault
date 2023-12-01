@@ -14,8 +14,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class SignInActivity : AppCompatActivity() {
 
@@ -63,15 +66,60 @@ class SignInActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateUI(account: GoogleSignInAccount) {
-        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-        auth.signInWithCredential(credential).addOnCompleteListener {
-            if (it.isSuccessful) {
-                val intent = Intent(this, NavigationActivity::class.java)
-                startActivity(intent)
-            } else {
-                Toast.makeText(this, it.exception.toString(), Toast.LENGTH_SHORT).show()
+    private fun updateUI(account: GoogleSignInAccount?) {
+        if (account != null) {
+            val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+            auth.signInWithCredential(credential).addOnCompleteListener { signInTask ->
+                if (signInTask.isSuccessful) {
+                    addUserToFirebase()
+                } else {
+                    Toast.makeText(this@SignInActivity, signInTask.exception.toString(), Toast.LENGTH_SHORT).show()
+                }
             }
+        } else {
+            Toast.makeText(this@SignInActivity, "Google Sign-In failed", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun addUserToFirebase() {
+        val curUser = auth.currentUser
+        if (curUser != null) {
+            val userDatabase = FirebaseDatabase.getInstance().getReference("UserData")
+            val userQuery = userDatabase.orderByChild("userEmail").equalTo(curUser.email)
+
+            userQuery.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    if (dataSnapshot.exists()) {
+                        // User already exists in the database
+                        val intent = Intent(this@SignInActivity, NavigationActivity::class.java)
+                        startActivity(intent)
+                    } else {
+                        val user = UserClass()
+                        user.userID = curUser.uid
+                        user.userName = curUser.displayName.toString()
+                        user.userEmail = curUser.email
+                        user.cardCount = 0
+                        user.deckCount = 0
+
+                        // User doesn't exist in the database, add user data
+                        userDatabase.child(curUser.uid).setValue(user)
+                            .addOnSuccessListener {
+                                // Data added successfully, proceed to NavigationActivity
+                                val intent = Intent(this@SignInActivity, NavigationActivity::class.java)
+                                startActivity(intent)
+                            }
+                            .addOnFailureListener { e ->
+                                // Handle failure to add data
+                                Toast.makeText(this@SignInActivity, "Failed to add user data: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Handle database error
+                    Toast.makeText(this@SignInActivity, "Database error: ${databaseError.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
         }
     }
 }

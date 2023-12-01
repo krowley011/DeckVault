@@ -5,8 +5,8 @@ import com.google.firebase.database.Exclude
 data class UserClass(
     var userName : String? = null,
     var userEmail : String? = null,
-    val cardCount : Int = 0,
-    val deckCount : Int = 0,
+    var cardCount : Int = 0,
+    var deckCount : Int = 0,
     @get:Exclude
     var userID : String = ""
 )

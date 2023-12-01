@@ -1,5 +1,6 @@
 package com.example.deckvault
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,8 +14,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 class HomeFragment : Fragment() {
-
-    // ... (Other code remains the same)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,6 +32,7 @@ class HomeFragment : Fragment() {
             val userRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
 
             userRef.addValueEventListener(object : ValueEventListener {
+                @SuppressLint("SetTextI18n")
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     // Retrieve user-specific data
                     val userCardCount = dataSnapshot.child("cardCount").getValue(Int::class.java) ?: 0
