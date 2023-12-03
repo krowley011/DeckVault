@@ -29,7 +29,7 @@
             <TextView
                 android:id="@+id/deckNameTV"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="50dp"
                 android:gravity="center"
                 android:lines="2"
                 android:text="Deck name"
@@ -40,13 +40,12 @@
             <TextView
                 android:id="@+id/deckCardCountTV"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="35dp"
                 android:gravity="center"
                 android:lines="2"
                 android:text="Card count"
                 android:textColor="@color/black"
-                android:textSize="25sp"
-                android:textStyle="bold" />
+                android:textSize="20sp" />
 
         </LinearLayout>
 

@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 
 class DeckAdapter(
@@ -28,7 +29,15 @@ class DeckAdapter(
 
         holder.deckName.text = deck.deckName
         holder.deckCount.text = deck.deckCardCount.toString()
-        Picasso.get().load(deck.deckImage).into(holder.deckImage)
+
+        // Load image using Picasso from Firebase Storage URL into the ImageView
+        val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(deck.deckImage)
+
+        storageReference.downloadUrl.addOnSuccessListener { uri ->
+            Picasso.get().load(uri).into(holder.deckImage)
+        }.addOnFailureListener {
+            // Handle any errors while fetching the download URL
+        }
     }
     override fun getItemCount(): Int {
         return deckRecyclerList.size
