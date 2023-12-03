@@ -81,10 +81,10 @@ class SignInActivity : AppCompatActivity() {
     }
 
     private fun addUserToFirebase() {
-        val curUser = auth.currentUser
-        if (curUser != null) {
+        val currUser = auth.currentUser
+        if (currUser != null) {
             val userDatabase = FirebaseDatabase.getInstance().getReference("UserData")
-            val userQuery = userDatabase.orderByChild("userEmail").equalTo(curUser.email)
+            val userQuery = userDatabase.orderByChild("userEmail").equalTo(currUser.email)
 
             userQuery.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
@@ -93,15 +93,16 @@ class SignInActivity : AppCompatActivity() {
                         val intent = Intent(this@SignInActivity, NavigationActivity::class.java)
                         startActivity(intent)
                     } else {
+                        // User doesn't exist in the database, add user data
                         val user = UserClass()
-                        user.userID = curUser.uid
-                        user.userName = curUser.displayName.toString()
-                        user.userEmail = curUser.email
+                        user.userID = currUser.uid
+                        user.userName = currUser.displayName.toString()
+                        user.userEmail = currUser.email
                         user.cardCount = 0
                         user.deckCount = 0
+                        user.decks = mutableListOf()
 
-                        // User doesn't exist in the database, add user data
-                        userDatabase.child(curUser.uid).setValue(user)
+                        userDatabase.child(currUser.uid).setValue(user)
                             .addOnSuccessListener {
                                 // Data added successfully, proceed to NavigationActivity
                                 val intent = Intent(this@SignInActivity, NavigationActivity::class.java)

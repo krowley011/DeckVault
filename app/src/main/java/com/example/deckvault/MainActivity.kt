@@ -28,7 +28,10 @@ class MainActivity : AppCompatActivity() {
         // If user is signed in, go to home page. If not, go to sign in
         Handler().postDelayed({
             if (currUser != null) {
-                getUserData(currUser)
+                // getUserData(currUser)
+                val userRepo = UserDataRepository(FirebaseDatabase.getInstance(), currUser.uid)
+                userRepo.fetchUserData()
+                // Initialize all cards
                 val cardRepo = currUser?.let { CardRepository(FirebaseDatabase.getInstance(), it) }
                 cardRepo!!.initializeCards()
                 val i = Intent(this, NavigationActivity::class.java)
@@ -46,7 +49,8 @@ class MainActivity : AppCompatActivity() {
             UserClass(
                 userName = it.displayName ?: "",
                 userEmail = it.email ?: "",
-                userID = it.uid
+                userID = it.uid,
+                decks = mutableListOf()
             )
         }
     }
@@ -59,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                 val database = FirebaseDatabase.getInstance()
                 val userReference = database.getReference("UserData").child(currUser.uid)
                 val cardRepo = user?.let { CardRepository(database, currUser) }
+                val deckRepo = user?.let { DeckRepository(database, currUser) }
 
                 userReference.child("userName").setValue((currUser.displayName))
                 userReference.child("email").setValue(currUser.email)

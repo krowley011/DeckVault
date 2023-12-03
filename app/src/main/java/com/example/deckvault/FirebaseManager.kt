@@ -1,5 +1,6 @@
 package com.example.deckvault
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
@@ -10,6 +11,7 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
@@ -25,20 +27,28 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         fetchUserData()
     }
 
-    private fun fetchUserData() {
+    fun fetchUserData() {
         // Firebase Path References
-        val userDataRef = database.getReference("UserData").child(userId).child("User")
+        val deckList = mutableListOf<DeckClass>()
+        val userDataRef = FirebaseDatabase.getInstance().getReference("UserData").child(userId).child("User")
         listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val userName = dataSnapshot.child("Username").getValue(String::class.java) ?: ""
                 val userEmail = dataSnapshot.child("Email").getValue(String::class.java) ?: ""
                 val userId = dataSnapshot.child("UserId").getValue(String::class.java) ?: ""
-                val cardCount =
-                    dataSnapshot.child("Card Count").getValue(Long::class.java)?.toInt() ?: 0
-                val deckCount =
-                    dataSnapshot.child("Deck Count").getValue(Long::class.java)?.toInt() ?: 0
+                val cardCount = dataSnapshot.child("Card Count").getValue(Long::class.java)?.toInt() ?: 0
+                val deckCount = dataSnapshot.child("Deck Count").getValue(Long::class.java)?.toInt() ?: 0
+                val deckListSnapshot = dataSnapshot.child("Deck List")
 
-                val user = UserClass(userName, userEmail, cardCount, deckCount, userId)
+                val deckList = mutableListOf<DeckClass>()
+
+                for (deckSnapshot in deckListSnapshot.children) {
+                    // Assuming each child is a DeckClass object
+                    val deck = deckSnapshot.getValue(DeckClass::class.java)
+                    deck?.let { deckList.add(it) }
+                }
+
+                val user = UserClass(userName, userEmail, cardCount, deckCount, userId, deckList)
                 _userData.postValue(user) // Update the LiveData object with the new data
             }
 
@@ -52,7 +62,8 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         userEmail: String?,
         cardCount: Int,
         deckCount: Int,
-        userId: String
+        userId: String,
+        deckList: MutableList<String>
     ) {
         val userDataRef = database.getReference("UserData").child(userId).child("User")
         val userData = HashMap<String, Any>()
@@ -61,18 +72,19 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         userData["UserId"] = userId
         userData["Card Count"] = cardCount
         userData["Deck Count"] = deckCount
+        userData["Deck List"] = deckList
 
         userDataRef.updateChildren(userData)
     }
 
     fun addUser(user: UserClass) {
-       val userDataRef =
-            database.getReference("UserData").child(user.userID.toString()).child("User")
-        userDataRef.child("Name").setValue(user.userName)
-        userDataRef.child("Email").setValue(user.userEmail)
-        userDataRef.child("Card Count").setValue(user.cardCount)
+       val userDataRef = database.getReference("UserData").child(user.userID).child("User")
+       userDataRef.child("Name").setValue(user.userName)
+       userDataRef.child("Email").setValue(user.userEmail)
+       userDataRef.child("Card Count").setValue(user.cardCount)
        userDataRef.child("Deck Count").setValue(user.deckCount)
-        userDataRef.child("UserId").setValue(user.userID)
+       userDataRef.child("UserId").setValue(user.userID)
+       userDataRef.child("Deck List").setValue(user.decks)
     }
 
     //To be used if allowing user to delete account
@@ -127,47 +139,33 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
             userDataRepo.userData.observe(owner) { user ->
                 var cardCount = user.cardCount
                 cardCount--
-                userDataRepo.updateUserData(
-                    user.userName,
-                    user.userEmail,
-                    user.cardCount,
-                    user.deckCount,
-                    user.userID
-                )
+                // Update card count
+                val userDataRef = database.getReference("UserData").child("userID")
+                userDataRef.child("Card Count").setValue(cardCount)
                 userDataRepo.stopUserListener()
             }
         }
 
         fun fetchCardData() {
             val profileDataRef = database.getReference("UserData").child(user.uid).child("Cards")
-            Decks.clear()
+            //Decks.clear()
             listener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     _isCardDataReady.postValue(false) // inform the caller the list is not ready
                     for (cardSnapshot in dataSnapshot.children) {
                         var cardName = cardSnapshot.child("Card Name").value as? String ?: ""
                         var cardImage = cardSnapshot.child("Card Image").value as? String ?: ""
-                        val cardNumber = (cardSnapshot.child("Card Number").value as? Long)?.toInt()
-                            ?: 0 // Cast to Int or provide a default value if null
+                        val cardNumber = (cardSnapshot.child("Card Number").value as? Long)?.toInt() ?: 0
                         var cardSubName = cardSnapshot.child("Card SubName").value as? String ?: ""
                         var cardColor = cardSnapshot.child("Card Color").value as? String ?: ""
-                        var cardClasses =
-                            cardSnapshot.child("Card Classes").value as? MutableList<String>
-                                ?: mutableListOf()
-                        val cardDamage = (cardSnapshot.child("Card Damage").value as? Long)?.toInt()
-                            ?: 0 // Cast to Int or provide a default value if null
-                        val cardDefense =
-                            (cardSnapshot.child("Card Defense").value as? Long)?.toInt()
-                                ?: 0 // Cast to Int or provide a default value if null
+                        var cardClasses = cardSnapshot.child("Card Classes").value as? MutableList<String> ?: mutableListOf()
+                        val cardDamage = (cardSnapshot.child("Card Damage").value as? Long)?.toInt() ?: 0
+                        val cardDefense = (cardSnapshot.child("Card Defense").value as? Long)?.toInt() ?: 0
                         var cardAction = cardSnapshot.child("Card Action").value as? String ?: ""
-                        val cardInk = (cardSnapshot.child("Card Ink").value as? Long)?.toInt()
-                            ?: 0 // Cast to Int or provide a default value if null
-                        val cardInkable = cardSnapshot.child("Card Inkable").value as? Boolean
-                            ?: false // Provide a default value if null
-                        val cardLore = (cardSnapshot.child("Card Lore").value as? Long)?.toInt()
-                            ?: 0 // Cast to Int or provide a default value if null
-                        var cardDescription =
-                            cardSnapshot.child("Card Description").value as? String ?: ""
+                        val cardInk = (cardSnapshot.child("Card Ink").value as? Long)?.toInt() ?: 0
+                        val cardInkable = cardSnapshot.child("Card Inkable").value as? Boolean ?: false
+                        val cardLore = (cardSnapshot.child("Card Lore").value as? Long)?.toInt() ?: 0
+                        var cardDescription = cardSnapshot.child("Card Description").value as? String ?: ""
 
                         var card = CardClass(
                             cardName,
@@ -184,6 +182,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
                             cardLore,
                             cardDescription
                         )
+                        //Need to specify which deck to add card to
                         Decks.add(card)
                     }
                     _isCardDataReady.postValue(true) // inform the caller we have filled the list with each book
@@ -206,38 +205,27 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
             val cardDataRef = database.getReference("UserData").child(user.uid).child("Cards")
 
             cardDataRef.child(card.cardNumber.toString()).child("Card Name").setValue(card.cardName)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Image")
-                .setValue(card.cardImage)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Number")
-                .setValue(card.cardNumber)
-            cardDataRef.child(card.cardNumber.toString()).child("Card SubName")
-                .setValue(card.cardSubName)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Color")
-                .setValue(card.cardColor)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Classes")
-                .setValue(card.cardClasses)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Damage")
-                .setValue(card.cardDamage)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Defense")
-                .setValue(card.cardDefense)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Action")
-                .setValue(card.cardAction)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Image").setValue(card.cardImage)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Number").setValue(card.cardNumber)
+            cardDataRef.child(card.cardNumber.toString()).child("Card SubName").setValue(card.cardSubName)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Color").setValue(card.cardColor)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Classes").setValue(card.cardClasses)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Damage").setValue(card.cardDamage)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Defense").setValue(card.cardDefense)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Action").setValue(card.cardAction)
             cardDataRef.child(card.cardNumber.toString()).child("Card Ink").setValue(card.cardInk)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Inkable")
-                .setValue(card.cardInkable)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Inkable").setValue(card.cardInkable)
             cardDataRef.child(card.cardNumber.toString()).child("Card Lore").setValue(card.cardLore)
-            cardDataRef.child(card.cardNumber.toString()).child("Card Description")
-                .setValue(card.cardDescription)
+            cardDataRef.child(card.cardNumber.toString()).child("Card Description").setValue(card.cardDescription)
 
             // update user's card count
             val userDataRepo = UserDataRepository(database, user.uid)
             userDataRepo.userData.observe(owner) { userProfile ->
                 userProfile?.let { user ->
-                    var cardCount = user.cardCount
-                        ?: 0 // Fetch the current card count from the observed user profile
+                    var cardCount = user.cardCount ?: 0 // Fetch the current card count from the observed user profile
                     cardCount++ // Increment the card count
 
-                    // Update only the card count for the user
+                    // Update the card count for the user
                     val userDataRef = database.getReference("UserData").child("userID")
                     userDataRef.child("Card Count").setValue(cardCount)
                     userDataRepo.stopUserListener()
@@ -254,6 +242,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 //        }
 
 
+        // Initialize all cards on user login
         fun initializeCards() {
             val cardDataRef = FirebaseDatabase.getInstance().getReference("CardData")
             var imageUrl = ""
@@ -400,8 +389,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
                     val deckName = deckSnapshot.child("deckName").value as? String ?: ""
                     val deckCover = deckSnapshot.child("deckCover").value as? String ?: ""
                     val deckId = deckSnapshot.child("deckId").value as? String ?: ""
-                    val deckCountCard =
-                        (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
+                    val deckCountCard = (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
 
                     val deck = DeckClass(
                         deckId,
@@ -433,23 +421,23 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 
 
     fun addDeck(deck: DeckClass, owner: LifecycleOwner) {
-        val cardDataRef = database.getReference("UserData").child(user.uid).child("Decks")
+        val deckDataRef = database.getReference("UserData").child(user.uid).child("Decks")
 
-        cardDataRef.child(deck.deckName).child("Deck Name").setValue(deck.deckName)
-        cardDataRef.child(deck.deckCover).child("Deck Cover").setValue(deck.deckCover)
-        cardDataRef.child(deck.deckId).child("Deck ID").setValue(deck.deckId)
-        cardDataRef.child(deck.deckCardCount.toString()).child("Deck Card Count")
-            .setValue(deck.deckCardCount)
+        deckDataRef.child(deck.deckName).child("Deck Name").setValue(deck.deckName)
+        deckDataRef.child(deck.deckCover).child("Deck Cover").setValue(deck.deckCover)
+        deckDataRef.child(deck.deckId).child("Deck ID").setValue(deck.deckId)
+        deckDataRef.child(deck.deckCardCount.toString()).child("Deck Card Count").setValue(deck.deckCardCount)
 
-        // update user's card count
+
+        // update user's deck count
         val userDataRepo = UserDataRepository(database, user.uid)
         userDataRepo.userData.observe(owner) { userProfile ->
             userProfile?.let { user ->
-                var deckCount = user.deckCount
-                    ?: 0 // Fetch the current card count from the observed user profile
+                // Fetch the current card count from the observed user profile
+                var deckCount = user.deckCount ?: 0
                 deckCount++ // Increment the card count
 
-                // Update only the card count for the user
+                // Update the deck count for the user
                 val userDataRef = database.getReference("UserData").child("userID")
                 userDataRef.child("Deck Count").setValue(deckCount)
                 userDataRepo.stopUserListener()
@@ -458,10 +446,11 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
     }
 
 
-    //For adding favorite functionality to decks
+    // For adding favorite functionality to decks
+    // Not currently implemented
 //        fun updateFavoriteStatus(deck: DeckClass)
 //       {
-//            val userDataRef = database.getReference("UserData").child(user.userID).child("Decks")
+//           val userDataRef = database.getReference("UserData").child(user.userID).child("Decks")
 //           userDataRef.child(deck.deckId).child("IsFavorite").setValue(deck.isFav)
 //        }
 
@@ -475,7 +464,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
         }
     }
 
-    // Not working
+    // Not working, not going to utilized at this time though
 //    fun clearUserDecks(owner: LifecycleOwner) {
 //        val currentUser = FirebaseAuth.getInstance().currentUser
 //        if (currentUser != null) {
