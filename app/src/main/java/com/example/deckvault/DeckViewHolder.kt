@@ -4,14 +4,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.deckvault.databinding.DecksCardviewBinding
 
 
-class DeckCardViewHolder(
+class DeckViewHolder(
     private val decksCardBinding: DecksCardviewBinding, // Assuming you have a DeckCardBinding class
     private val clickListener: DeckClickListener
 ) : RecyclerView.ViewHolder(decksCardBinding.root) {
     fun bindDeck(deck: DeckClass) {
-        decksCardBinding.cardImageView.setImageResource(deck.deckCover.toInt())
+        decksCardBinding.deckImageView.setImageResource(deck.deckImage.toInt())
         decksCardBinding.deckNameTV.text = deck.deckName
-        decksCardBinding.cardCountTV.text = deck.deckCardCount.toString()
+        decksCardBinding.deckCardCountTV.text = deck.deckCardCount.toString()
 
         decksCardBinding.root.setOnClickListener {
             clickListener.onClick(deck)

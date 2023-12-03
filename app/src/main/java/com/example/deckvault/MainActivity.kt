@@ -36,9 +36,6 @@ class MainActivity : AppCompatActivity() {
                 // Initialize all cards
                 val cardRepo = currUser?.let { CardRepository(FirebaseDatabase.getInstance(), it) }
                 cardRepo!!.initializeCards()
-                // Add test deck
-                val deckRepo = DeckRepository(FirebaseDatabase.getInstance(), currUser)
-                deckRepo.addDeck("Test Cover", "Test Name", 20)
 
                 val i = Intent(this, NavigationActivity::class.java)
                 startActivity(i)

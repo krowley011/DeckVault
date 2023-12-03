@@ -19,7 +19,7 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/cardImageView"
+                android:id="@+id/deckImageView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
@@ -38,7 +38,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/cardCountTV"
+                android:id="@+id/deckCardCountTV"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"

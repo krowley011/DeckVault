@@ -1,6 +1,5 @@
 package com.example.deckvault
 
-import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LifecycleOwner
@@ -11,7 +10,6 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.GenericTypeIndicator
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
@@ -337,7 +335,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
     }
 
 class DeckRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
-    public var Decks = mutableListOf<CardClass>()
+    public var Decks = mutableListOf<DeckClass>()
     private val _isDeckDataReady = MutableLiveData<Boolean>()
     val isDeckDataReady: LiveData<Boolean>
         get() = _isDeckDataReady
@@ -422,7 +420,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
         val deckDataRef = database.getReference("UserData").child(user.uid).child("Decks")
 
         val newDeck = DeckClass(
-            deckCover = deckCover,
+            deckImage = deckCover,
             deckName = deckName,
             deckCardCount = deckCardCount
         )

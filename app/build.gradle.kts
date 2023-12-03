@@ -93,5 +93,9 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    // For loading and showing images
+    implementation("com.squareup.picasso:picasso:2.71828")
+
+
 
 }

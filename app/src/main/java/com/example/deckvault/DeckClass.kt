@@ -1,7 +1,7 @@
 package com.example.deckvault
 
 data class DeckClass (
-        var deckCover: String = "",
+        var deckImage: String = "",
         var deckName: String = "",
         var deckCardCount: Int = 0,
 
