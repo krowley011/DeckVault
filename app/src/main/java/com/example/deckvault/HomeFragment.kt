@@ -29,7 +29,7 @@ class HomeFragment : Fragment() {
 
             // Retrieve user-related information from Firebase Database
             val userId = currentUser.uid
-            val userRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
+            val userRef = FirebaseDatabase.getInstance().getReference("User").child(userId)
 
             userRef.addValueEventListener(object : ValueEventListener {
                 @SuppressLint("SetTextI18n")

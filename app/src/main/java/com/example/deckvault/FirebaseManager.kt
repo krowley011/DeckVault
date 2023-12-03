@@ -63,7 +63,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
         cardCount: Int,
         deckCount: Int,
         userId: String,
-        deckList: MutableList<String>
+        deckList: MutableList<DeckClass>
     ) {
         val userDataRef = database.getReference("UserData").child(userId).child("User")
         val userData = HashMap<String, Any>()
@@ -352,7 +352,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
         val database = FirebaseDatabase.getInstance()
 
         // Reference to the specific deck to be removed
-        val deckRef = database.reference.child("UserData").child(user.uid).child("Deck").child(deck.deckId)
+        val deckRef = database.reference.child("UserData").child(user.uid).child("Deck").child(deck.deckName)
 
         // Remove the specific deck from the user's decks
         deckRef.removeValue().addOnCompleteListener { removeTask ->
@@ -392,14 +392,12 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
                     val deckCountCard = (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
 
                     val deck = DeckClass(
-                        deckId,
                         deckCover,
                         deckName,
                         deckCountCard
                     )
 
-                    // Not working
-                    // user.add(deck)
+                    //user.add(deck)
                 }
 
                 _isDeckDataReady.postValue(true) // Inform the caller we have filled the list with each deck
@@ -420,31 +418,51 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 //        }
 
 
-    fun addDeck(deck: DeckClass, owner: LifecycleOwner) {
+    fun addDeck(deckCover: String, deckName: String, deckCardCount: Int) {
         val deckDataRef = database.getReference("UserData").child(user.uid).child("Decks")
 
-        deckDataRef.child(deck.deckName).child("Deck Name").setValue(deck.deckName)
-        deckDataRef.child(deck.deckCover).child("Deck Cover").setValue(deck.deckCover)
-        deckDataRef.child(deck.deckId).child("Deck ID").setValue(deck.deckId)
-        deckDataRef.child(deck.deckCardCount.toString()).child("Deck Card Count").setValue(deck.deckCardCount)
+        val newDeck = DeckClass(
+            deckCover = deckCover,
+            deckName = deckName,
+            deckCardCount = deckCardCount
+        )
 
-
-        // update user's deck count
-        val userDataRepo = UserDataRepository(database, user.uid)
-        userDataRepo.userData.observe(owner) { userProfile ->
-            userProfile?.let { user ->
-                // Fetch the current card count from the observed user profile
-                var deckCount = user.deckCount ?: 0
-                deckCount++ // Increment the card count
-
-                // Update the deck count for the user
-                val userDataRef = database.getReference("UserData").child("userID")
-                userDataRef.child("Deck Count").setValue(deckCount)
-                userDataRepo.stopUserListener()
+        val newDeckRef = deckDataRef.push() // Generate a new unique key for the deck
+        newDeckRef.setValue(newDeck)
+            .addOnSuccessListener {
+                // Increment the deck count after successfully adding the deck
+                incrementDeckCount()
+                // Handle successful addition of the deck
             }
-        }
+            .addOnFailureListener { e ->
+                // Handle failure to add the deck
+            }
     }
 
+    private fun incrementDeckCount() {
+        val userDataRef = database.getReference("UserData").child(user.uid)
+
+        // Fetch the current deck count
+        userDataRef.child("deckCount").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val currentCount = dataSnapshot.getValue(Int::class.java) ?: 0
+                val newCount = currentCount + 1
+
+                // Update the deck count in the database
+                userDataRef.child("deckCount").setValue(newCount)
+                    .addOnSuccessListener {
+                        // Handle successful update of deck count
+                    }
+                    .addOnFailureListener { e ->
+                        // Handle failure to update deck count
+                    }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle cancellation
+            }
+        })
+    }
 
     // For adding favorite functionality to decks
     // Not currently implemented

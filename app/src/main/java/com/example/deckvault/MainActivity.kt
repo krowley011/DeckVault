@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
+import androidx.lifecycle.LifecycleOwner
 import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
         FirebaseApp.initializeApp(this)
         auth = FirebaseAuth.getInstance()
         val currUser = auth.currentUser
+        val owner: LifecycleOwner = this
 
         // If user is signed in, go to home page. If not, go to sign in
         Handler().postDelayed({
@@ -34,6 +36,10 @@ class MainActivity : AppCompatActivity() {
                 // Initialize all cards
                 val cardRepo = currUser?.let { CardRepository(FirebaseDatabase.getInstance(), it) }
                 cardRepo!!.initializeCards()
+                // Add test deck
+                val deckRepo = DeckRepository(FirebaseDatabase.getInstance(), currUser)
+                deckRepo.addDeck("Test Cover", "Test Name", 20)
+
                 val i = Intent(this, NavigationActivity::class.java)
                 startActivity(i)
             } else {
