@@ -1,21 +1,36 @@
-package com.example.deckvault
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.deckvault.DeckClickListener
+import com.example.deckvault.DeckRecyclerData
+import com.example.deckvault.R
 import com.google.firebase.storage.FirebaseStorage
 import com.squareup.picasso.Picasso
 
 class DeckAdapter(
-    private var deckRecyclerList: List<DeckRecyclerData>
+    private var deckRecyclerList: List<DeckRecyclerData>,
+    private val itemClickListener: DeckClickListener
 ) : RecyclerView.Adapter<DeckAdapter.ItemViewHolder>() {
-    inner class ItemViewHolder(view: View): RecyclerView.ViewHolder(view) {
+
+    inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
         var deckImage: ImageView = view.findViewById(R.id.deckImageView)
         var deckName: TextView = view.findViewById(R.id.deckNameTV)
         var deckCount: TextView = view.findViewById(R.id.deckCardCountTV)
+
+        init {
+            itemView.setOnClickListener(this)
+        }
+
+        override fun onClick(view: View?) {
+            val position = adapterPosition
+            if (position != RecyclerView.NO_POSITION) {
+                val deck = deckRecyclerList[position]
+                itemClickListener.onClick(deck) // Use itemClickListener
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
@@ -39,6 +54,7 @@ class DeckAdapter(
             // Handle any errors while fetching the download URL
         }
     }
+
     override fun getItemCount(): Int {
         return deckRecyclerList.size
     }

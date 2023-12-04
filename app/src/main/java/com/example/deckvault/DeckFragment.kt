@@ -1,5 +1,6 @@
 package com.example.deckvault
 
+import DeckAdapter
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
@@ -13,9 +14,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -24,18 +23,19 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 
-class DeckFragment : Fragment() {
+class DeckFragment : Fragment(), DeckClickListener {
     private lateinit var deckListRecycler: RecyclerView
     private lateinit var deckAdapter: DeckAdapter
     private var auth = FirebaseAuth.getInstance()
     private var currUser = auth.currentUser
+    val deckRecyclerList = ArrayList<DeckRecyclerData>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_deck, container, false)
-        val deckCountTV: TextView = rootView.findViewById(R.id.deckCountTV)
+        val deckCountTV: TextView = rootView.findViewById(R.id.deckPageNameTV)
 
         val database = FirebaseDatabase.getInstance()
         val deckCountRef = database.getReference("UserData/${currUser!!.uid}/deckCount")
@@ -55,17 +55,20 @@ class DeckFragment : Fragment() {
         return rootView
     }
 
+    override fun onClick(deck: DeckRecyclerData) {
+
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        deckListRecycler = view.findViewById(R.id.decksRecylView)        // Grid layout to display two items per row
+        deckListRecycler = view.findViewById(R.id.deckPageRecylView)        // Grid layout to display two items per row
         val layoutManager = GridLayoutManager(requireContext(), 2)
         deckListRecycler.layoutManager = layoutManager
 
 
         val deckRecyclerList = ArrayList<DeckRecyclerData>()
-        deckAdapter = DeckAdapter(deckRecyclerList)
+        deckAdapter = DeckAdapter(deckRecyclerList, this)
         deckListRecycler.adapter = deckAdapter
 
         setHasOptionsMenu(true)
@@ -77,7 +80,7 @@ class DeckFragment : Fragment() {
 
     private fun setupDeckMenu(rootView: View) {
         val button =
-            rootView.findViewById<ImageButton>(R.id.deckMenuBTN) // Replace with your button ID
+            rootView.findViewById<ImageButton>(R.id.deckPageMenuBTN) // Replace with your button ID
         button.setOnClickListener {
             val popup = PopupMenu(requireContext(), button)
             popup.menuInflater.inflate(R.menu.deckmenu, popup.menu)
@@ -152,7 +155,6 @@ class DeckFragment : Fragment() {
 
         deckListRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val deckRecyclerList = ArrayList<DeckRecyclerData>()
 
                 for (deckSnapshot in dataSnapshot.children) {
                     val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)

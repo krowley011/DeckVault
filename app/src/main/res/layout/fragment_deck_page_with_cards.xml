@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/deckPageWithCards"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
@@ -21,7 +22,7 @@
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_bias="1.0"
             app:srcCompat="@drawable/rectangle" />
 
         <androidx.appcompat.widget.Toolbar
@@ -37,7 +38,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/deskNameTV"
+            android:id="@+id/deckPageNameTopTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Deck Name"
@@ -49,22 +50,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
-        <androidx.recyclerview.widget.RecyclerView
-
-            android:id="@+id/deckPageRecylView"
-            android:layout_width="259dp"
-            android:layout_height="343dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginBottom="32dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <TextView
+            android:id="@+id/deckPageNameTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:text="Deck Name"
+            android:textSize="20sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardMenuBTN" />
+            app:layout_constraintTop_toTopOf="@+id/rectangle" />
 
         <ImageButton
-            android:id="@+id/cardMenuBTN"
+            android:id="@+id/deckPageMenuBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -77,8 +75,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/rectangle" />
 
+        <androidx.recyclerview.widget.RecyclerView
+
+            android:id="@+id/deckPageRecylView"
+            android:layout_width="350dp"
+            android:layout_height="500dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/deckPageNameTV" />
+
         <ImageButton
-            android:id="@+id/SDSearchBTN"
+            android:id="@+id/deckPageSearchBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
@@ -87,34 +99,8 @@
             android:scaleX="2.5"
             android:scaleY="2.5"
             android:src="@drawable/search"
-            app:tint="#FFFFFF"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/cardAmountTV"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:text="0 cards"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
-
-        <ImageButton
-            android:id="@+id/SDBackBTN"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:background="#00FFFFFF"
-            android:contentDescription="Back"
-            android:scaleX="2.5"
-            android:scaleY="2.5"
-            android:src="@drawable/baseline_arrow_back_24"
-            app:layout_constraintBottom_toTopOf="@+id/rectangle"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#FFFFFF" />
 

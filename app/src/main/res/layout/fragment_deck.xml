@@ -37,7 +37,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/decksTV"
+            android:id="@+id/deckPageNameTopTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Decks"
@@ -50,7 +50,7 @@
             app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
         <TextView
-            android:id="@+id/deckCountTV"
+            android:id="@+id/deckPageNameTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -61,7 +61,7 @@
             app:layout_constraintTop_toTopOf="@+id/rectangle" />
 
         <ImageButton
-            android:id="@+id/deckMenuBTN"
+            android:id="@+id/deckPageMenuBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
@@ -76,7 +76,7 @@
 
         <androidx.recyclerview.widget.RecyclerView
 
-            android:id="@+id/decksRecylView"
+            android:id="@+id/deckPageRecylView"
             android:layout_width="350dp"
             android:layout_height="500dp"
             android:layout_marginStart="24dp"
@@ -86,10 +86,10 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/deckCountTV" />
+            app:layout_constraintTop_toBottomOf="@+id/deckPageNameTV" />
 
         <ImageButton
-            android:id="@+id/deckSearchBTN"
+            android:id="@+id/deckPageSearchBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="24dp"
