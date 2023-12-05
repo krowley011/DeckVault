@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:title="Move Card"
-        android:id="@+id/Card_Move"/>
+        android:id="@+id/CardMenu_Move"/>
     <item
-        android:title="CopyMenu_Card"
-        android:id="@+id/CardMenu_Copy"/>
+        android:id="@+id/CardMenu_Copy"
+        android:title="Copy Card" />
     <item
         android:title="Delete Card"
         android:id="@+id/CardMenu_Delete"/>

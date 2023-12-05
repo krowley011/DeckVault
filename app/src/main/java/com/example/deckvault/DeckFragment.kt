@@ -1,6 +1,7 @@
 package com.example.deckvault
 
 import DeckAdapter
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
@@ -35,12 +36,13 @@ class DeckFragment : Fragment(), DeckClickListener {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_deck, container, false)
-        val deckCountTV: TextView = rootView.findViewById(R.id.deckPageNameTV)
+        val deckCountTV: TextView = rootView.findViewById(R.id.deckPageDeckCountTV)
 
         val database = FirebaseDatabase.getInstance()
         val deckCountRef = database.getReference("UserData/${currUser!!.uid}/deckCount")
 
         deckCountRef.addValueEventListener(object : ValueEventListener {
+            @SuppressLint("SetTextI18n")
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 val deckCount = dataSnapshot.getValue(Int::class.java) ?: 0
                 deckCountTV.text = "You have $deckCount decks"
@@ -78,9 +80,10 @@ class DeckFragment : Fragment(), DeckClickListener {
         getDeckCount()
     }
 
+    // Pop up menu for deck management
     private fun setupDeckMenu(rootView: View) {
         val button =
-            rootView.findViewById<ImageButton>(R.id.deckPageMenuBTN) // Replace with your button ID
+            rootView.findViewById<ImageButton>(R.id.deckPageMenuBTN)
         button.setOnClickListener {
             val popup = PopupMenu(requireContext(), button)
             popup.menuInflater.inflate(R.menu.deckmenu, popup.menu)
@@ -97,6 +100,7 @@ class DeckFragment : Fragment(), DeckClickListener {
         }
     }
 
+    // Dialog box to add a new deck
     private fun showAddDeckDialog() {
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -107,7 +111,6 @@ class DeckFragment : Fragment(), DeckClickListener {
         val addDeckButton = dialog.findViewById<Button>(R.id.adddeckBTN)
         val deckNameInput = dialog.findViewById<EditText>(R.id.deckNameET)
 
-        // Example of Firebase initialization in an activity or fragment
         val database = FirebaseDatabase.getInstance()
         val user = FirebaseAuth.getInstance().currentUser
 
@@ -149,6 +152,7 @@ class DeckFragment : Fragment(), DeckClickListener {
         })
     }
 
+    // Populate decks for recycler view
     private fun getDecks(deckCount: Int) {
         val database = FirebaseDatabase.getInstance()
         val deckListRef = database.getReference("UserData/${currUser!!.uid}/Decks")
@@ -157,12 +161,11 @@ class DeckFragment : Fragment(), DeckClickListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                 for (deckSnapshot in dataSnapshot.children) {
+                    // Retreive deck information from Firebase
                     val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)
                     val deckName = deckSnapshot.child("deckName").getValue(String::class.java)
-                    val deckCardCount =
-                        deckSnapshot.child("deckCardCount").getValue(Int::class.java)
+                    val deckCardCount = deckSnapshot.child("deckCardCount").getValue(Int::class.java)
 
-                    // Create DeckRecyclerData and add to the list
                     if (deckImage != null && deckName != null && deckCardCount != null) {
                         val deckData = DeckRecyclerData(deckImage, deckName, deckCardCount)
                         deckRecyclerList.add(deckData)

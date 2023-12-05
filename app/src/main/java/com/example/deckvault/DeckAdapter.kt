@@ -24,11 +24,12 @@ class DeckAdapter(
             itemView.setOnClickListener(this)
         }
 
+        // Need to fix onClick event
         override fun onClick(view: View?) {
             val position = adapterPosition
             if (position != RecyclerView.NO_POSITION) {
                 val deck = deckRecyclerList[position]
-                itemClickListener.onClick(deck) // Use itemClickListener
+                itemClickListener.onClick(deck)
             }
         }
     }
