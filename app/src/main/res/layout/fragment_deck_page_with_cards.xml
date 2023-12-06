@@ -104,6 +104,23 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="#FFFFFF" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/floatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/blue"
+            android:clickable="true"
+            android:contentDescription="Add Card Button"
+            android:src="@drawable/plus_sign"
+            app:backgroundTint="@color/blue"
+            app:fabSize="normal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:maxImageSize="35dp"
+            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

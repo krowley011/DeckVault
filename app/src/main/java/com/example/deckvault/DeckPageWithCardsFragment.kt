@@ -9,7 +9,7 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 
 
-class DeckPageWithCards : Fragment() {
+class DeckPageWithCardsFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,16 +24,28 @@ class DeckPageWithCards : Fragment() {
         return inflater.inflate(R.layout.fragment_deck_page_with_cards, container, false)
     }
 
-    private fun setupDeckPageMenu(rootView: View) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        setHasOptionsMenu(true)
+        setupSelectedDeckPageMenu(view)
+
+    }
+
+    private fun setupSelectedDeckPageMenu(rootView: View) {
         val button =
             rootView.findViewById<ImageButton>(R.id.selectedDeckMenuBTN)
         button.setOnClickListener {
             val popup = PopupMenu(requireContext(), button)
-            popup.menuInflater.inflate(R.menu.cardmenu, popup.menu)
+            popup.menuInflater.inflate(R.menu.selecteddeckmenu, popup.menu)
             popup.setOnMenuItemClickListener { menuItem ->
                 // Handle menu item click events here
                 when (menuItem.itemId) {
-                    R.id.CardMenu_Copy -> {
+                    R.id.SelectedDeckMenu_Select -> {
+                        // Allow user to select multiple decks
+                    }
+                    R.id.SelectedDeckMenu_SortBy -> {
+                        // Allow user to sort by filters
                     }
                 }
                 true

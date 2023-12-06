@@ -57,14 +57,11 @@ class DeckFragment : Fragment(), DeckClickListener {
         return rootView
     }
 
-    override fun onClick(deck: DeckRecyclerData) {
-
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        deckListRecycler = view.findViewById(R.id.deckPageRecylView)        // Grid layout to display two items per row
+        deckListRecycler = view.findViewById(R.id.deckPageRecylView)
+        // Grid layout to display two items per row
         val layoutManager = GridLayoutManager(requireContext(), 2)
         deckListRecycler.layoutManager = layoutManager
 
@@ -78,6 +75,22 @@ class DeckFragment : Fragment(), DeckClickListener {
 
         // Populate recycler view
         getDeckCount()
+    }
+
+    override fun onClick(deck: DeckRecyclerData) {
+        Log.d("DeckFragment", "Clicked on deck: ${deck.deckName}")
+        val deckPageFragment = DeckPageWithCardsFragment()
+
+        val args = Bundle()
+        args.putString("deckName", deck.deckName)
+        args.putInt("deckCardCount", deck.deckCardCount)
+        deckPageFragment.arguments = args
+
+        // Navigate to the new fragment
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.deckPageWithCards, deckPageFragment)
+            .addToBackStack(null)
+            .commit()
     }
 
     // Pop up menu for deck management

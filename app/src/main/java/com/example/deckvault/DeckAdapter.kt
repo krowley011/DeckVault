@@ -55,7 +55,6 @@ class DeckAdapter(
             // Handle any errors while fetching the download URL
         }
     }
-
     override fun getItemCount(): Int {
         return deckRecyclerList.size
     }
