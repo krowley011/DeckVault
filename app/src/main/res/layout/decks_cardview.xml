@@ -10,7 +10,6 @@
         android:layout_height="match_parent"
         app:cardCornerRadius="15dp"
         android:layout_margin="10dp"
-        android:clickable="true"
         app:cardElevation="7dp">
 
         <LinearLayout
@@ -23,7 +22,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:adjustViewBounds="true"
-                android:contentDescription="Card" />
+                android:contentDescription="Card"
+                android:src="@drawable/backofcard" />
 
             <TextView
                 android:id="@+id/deckNameTV"

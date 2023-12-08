@@ -65,8 +65,8 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
         val layoutManager = GridLayoutManager(requireContext(), 2)
         deckListRecycler.layoutManager = layoutManager
 
+        deckRecyclerList.clear() // Clear the list before repopulating
 
-        val deckRecyclerList = ArrayList<DeckRecyclerData>()
         deckAdapter = DeckAdapter(deckRecyclerList, this)
         deckListRecycler.adapter = deckAdapter
 
@@ -79,30 +79,38 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
 
     override fun onDeckClick(position: Int) {
         Log.d("DeckFragment", "Clicked on deck.")
-        val deckPageFragment = DeckPageWithCardsFragment()
-        val transaction = requireActivity().supportFragmentManager.beginTransaction()
-
-        val bundle = Bundle()
 
         val database = FirebaseDatabase.getInstance()
-        val cardRepo = CardRepository(database, currUser!!)
+        val deckRepo = DeckRepository(database, currUser!!)
 
-        if (cardRepo.isCardDataReady.value == true && !cardRepo.Cards.isNullOrEmpty()) {
-            val deckCardList = cardRepo.Cards
-            if (position < deckCardList.size) {
-                val selectedCard = deckCardList[position]
-                bundle.putParcelable("Selected Card", selectedCard)
+        if (deckRepo.isDeckDataReady.value == true && !deckRepo.Decks.isNullOrEmpty()) {
+            val deckList = deckRepo.Decks
+            if (position < deckList.size) {
+                val selectedDeck = deckList[position]
+
+                val bundle = Bundle()
+                bundle.putParcelable("Selected Deck", selectedDeck)
+
+                val deckPageFragment = DeckPageWithCardsFragment()
+                deckPageFragment.arguments = bundle
+
+                val transaction = requireActivity().supportFragmentManager.beginTransaction()
+
+                transaction.replace(R.id.deckPageWithCards, deckPageFragment)
+                transaction.addToBackStack(null)
+                transaction.commit()
+
+                Log.d("DeckFragment", "Transaction completed.")
+            } else {
+                Log.e("DeckFragment", "Position out of bounds.")
             }
+        } else {
+            Log.e("DeckFragment", "Deck data not ready or empty.")
         }
 
-        cardRepo.stopCardListener()
-
-        deckPageFragment.arguments = bundle
-
-        transaction.replace(R.id.deckPageWithCards, deckPageFragment)
-        transaction.addToBackStack(null)
-        transaction.commit()
+        deckRepo.stopDeckListener()
     }
+
 
 
     // Pop up menu for deck management

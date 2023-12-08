@@ -13,7 +13,7 @@ import com.squareup.picasso.Picasso
 
 class DeckAdapter(
     private var deckRecyclerList: List<DeckRecyclerData>,
-    private val deckClickListener: DeckAdapter.OnDeckClickListener
+    private val deckClickListener: OnDeckClickListener
 ) : RecyclerView.Adapter<DeckAdapter.ItemViewHolder>() {
 
     interface OnDeckClickListener {
@@ -59,7 +59,13 @@ class DeckAdapter(
         }.addOnFailureListener {
             // Handle any errors while fetching the download URL
         }
+
+        holder.itemView.setOnClickListener {
+            // Call the interface method to handle click events
+            deckClickListener.onDeckClick(position)
+        }
     }
+
     override fun getItemCount(): Int {
         return deckRecyclerList.size
     }

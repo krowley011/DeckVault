@@ -381,7 +381,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 
         listener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                _isDeckDataReady.postValue(false) // Inform the caller the list is not ready
+                _isDeckDataReady.postValue(false) // Inform the caller the list is ready
 
                 for (deckSnapshot in dataSnapshot.children) {
                     val deckName = deckSnapshot.child("deckName").value as? String ?: ""
@@ -399,7 +399,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
                         )
                     }
 
-                    //user.add(deck)
+                    deck?.let { Decks.add(it) }
                 }
 
                 _isDeckDataReady.postValue(true) // Inform the caller we have filled the list with each deck
