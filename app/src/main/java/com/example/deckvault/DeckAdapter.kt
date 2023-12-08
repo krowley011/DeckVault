@@ -1,10 +1,11 @@
+
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.deckvault.DeckClickListener
 import com.example.deckvault.DeckRecyclerData
 import com.example.deckvault.R
 import com.google.firebase.storage.FirebaseStorage
@@ -12,8 +13,12 @@ import com.squareup.picasso.Picasso
 
 class DeckAdapter(
     private var deckRecyclerList: List<DeckRecyclerData>,
-    private val itemClickListener: DeckClickListener
+    private val deckClickListener: DeckAdapter.OnDeckClickListener
 ) : RecyclerView.Adapter<DeckAdapter.ItemViewHolder>() {
+
+    interface OnDeckClickListener {
+        fun onDeckClick(position: Int)
+    }
 
     inner class ItemViewHolder(view: View) : RecyclerView.ViewHolder(view), View.OnClickListener {
         var deckImage: ImageView = view.findViewById(R.id.deckImageView)
@@ -21,17 +26,17 @@ class DeckAdapter(
         var deckCount: TextView = view.findViewById(R.id.deckCardCountTV)
 
         init {
-            itemView.setOnClickListener(this)
+            view.setOnClickListener(this)
         }
 
-        // Need to fix onClick event
-        override fun onClick(view: View?) {
+        override fun onClick(p0: View?) {
             val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION) {
-                val deck = deckRecyclerList[position]
-                itemClickListener.onClick(deck)
+            if(position != RecyclerView.NO_POSITION) {
+                Log.d("DeckAdapter", "Clicked on item at position: $position")
+                deckClickListener.onDeckClick(position)
             }
         }
+
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {

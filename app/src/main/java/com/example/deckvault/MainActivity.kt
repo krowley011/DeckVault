@@ -1,15 +1,19 @@
 package com.example.deckvault
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleOwner
+import com.google.firebase.Firebase
 import com.google.firebase.FirebaseApp
+import com.google.firebase.appcheck.appCheck
+import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.initialize
 
 
 class MainActivity : AppCompatActivity() {
@@ -37,12 +41,21 @@ class MainActivity : AppCompatActivity() {
                 val cardRepo = currUser?.let { CardRepository(FirebaseDatabase.getInstance(), it) }
                 cardRepo!!.initializeCards()
 
+                Firebase.initialize(context = this)
+                Firebase.appCheck.installAppCheckProviderFactory(
+                    PlayIntegrityAppCheckProviderFactory.getInstance(),
+                )
                 val i = Intent(this, NavigationActivity::class.java)
+
+                userRepo.stopUserListener()
+                cardRepo.stopCardListener()
+
                 startActivity(i)
             } else {
                 val s = Intent(this, SignInActivity::class.java)
                 startActivity(s)
             }
+
         }, 1500)
     }
 

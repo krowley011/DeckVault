@@ -61,16 +61,17 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Firebase functions
-    implementation("com.google.firebase:firebase-auth:22.2.0")
-    implementation(platform("com.google.firebase:firebase-bom:32.4.0"))
+    implementation("com.google.firebase:firebase-auth:22.3.0")
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-functions:20.3.1")
+    implementation("com.google.firebase:firebase-functions:20.4.0")
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation(platform("com.google.firebase:firebase-bom:32.6.0"))
 
     // Google dependencies
     implementation("com.google.code.gson:gson:2.9.1")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
     // CameraX dependencies
     val cameraxVersion = "1.4.0-alpha01"

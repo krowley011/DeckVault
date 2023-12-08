@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -24,7 +24,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
 
-class DeckFragment : Fragment(), DeckClickListener {
+class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     private lateinit var deckListRecycler: RecyclerView
     private lateinit var deckAdapter: DeckAdapter
     private var auth = FirebaseAuth.getInstance()
@@ -77,26 +77,37 @@ class DeckFragment : Fragment(), DeckClickListener {
         getDeckCount()
     }
 
-    override fun onClick(deck: DeckRecyclerData) {
-        Log.d("DeckFragment", "Clicked on deck: ${deck.deckName}")
+    override fun onDeckClick(position: Int) {
+        Log.d("DeckFragment", "Clicked on deck.")
         val deckPageFragment = DeckPageWithCardsFragment()
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
 
-        val args = Bundle()
-        args.putString("deckName", deck.deckName)
-        args.putInt("deckCardCount", deck.deckCardCount)
-        deckPageFragment.arguments = args
+        val bundle = Bundle()
 
-        // Navigate to the new fragment
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.deckPageWithCards, deckPageFragment)
-            .addToBackStack(null)
-            .commit()
+        val database = FirebaseDatabase.getInstance()
+        val cardRepo = CardRepository(database, currUser!!)
+
+        if (cardRepo.isCardDataReady.value == true && !cardRepo.Cards.isNullOrEmpty()) {
+            val deckCardList = cardRepo.Cards
+            if (position < deckCardList.size) {
+                val selectedCard = deckCardList[position]
+                bundle.putParcelable("Selected Card", selectedCard)
+            }
+        }
+
+        cardRepo.stopCardListener()
+
+        deckPageFragment.arguments = bundle
+
+        transaction.replace(R.id.deckPageWithCards, deckPageFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
+
 
     // Pop up menu for deck management
     private fun setupDeckMenu(rootView: View) {
-        val button =
-            rootView.findViewById<ImageButton>(R.id.deckPageMenuBTN)
+        val button = rootView.findViewById<ImageButton>(R.id.deckPageMenuBTN)
         button.setOnClickListener {
             val popup = PopupMenu(requireContext(), button)
             popup.menuInflater.inflate(R.menu.deckmenu, popup.menu)
@@ -131,16 +142,17 @@ class DeckFragment : Fragment(), DeckClickListener {
 
         addDeckButton.setOnClickListener {
             val deckName = deckNameInput.text.toString()
+            val cardList: MutableList<CardClass> = mutableListOf()
             if (deckName.isNotEmpty()) {
-                // Create a new deck with the entered name
-                val newDeck = DeckClass(deckImage = "", deckName = deckName, deckCardCount = 0)
-
-                deckRepo!!.addDeck("gs://deckvault-a0189.appspot.com/backofcard.png", deckName, 0)
+                // Create a new deck with the entered name and default values
+                deckRepo!!.addDeck("gs://deckvault-a0189.appspot.com/backofcard.png", deckName, 0, cardList)
 
             }
 
             dialog.dismiss()
         }
+
+        deckRepo?.stopDeckListener()
 
         dialog.show()
     }
@@ -155,7 +167,7 @@ class DeckFragment : Fragment(), DeckClickListener {
                 val deckCount = dataSnapshot.getValue(Int::class.java) ?: 0
 
                 if (deckCount > 0) {
-                    getDecks(deckCount)
+                    getDecks()
                 }
             }
 
@@ -166,7 +178,7 @@ class DeckFragment : Fragment(), DeckClickListener {
     }
 
     // Populate decks for recycler view
-    private fun getDecks(deckCount: Int) {
+    private fun getDecks() {
         val database = FirebaseDatabase.getInstance()
         val deckListRef = database.getReference("UserData/${currUser!!.uid}/Decks")
 
@@ -174,7 +186,7 @@ class DeckFragment : Fragment(), DeckClickListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
 
                 for (deckSnapshot in dataSnapshot.children) {
-                    // Retreive deck information from Firebase
+                    // Retrieve deck information from Firebase
                     val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)
                     val deckName = deckSnapshot.child("deckName").getValue(String::class.java)
                     val deckCardCount = deckSnapshot.child("deckCardCount").getValue(Int::class.java)

@@ -115,7 +115,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 }
 
     class CardRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
-        public var Decks = mutableListOf<CardClass>()
+        public var Cards = mutableListOf<CardClass>()
         private val _isCardDataReady = MutableLiveData<Boolean>()
         val isCardDataReady: LiveData<Boolean>
             get() = _isCardDataReady
@@ -181,7 +181,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
                             cardDescription
                         )
                         //Need to specify which deck to add card to
-                        Decks.add(card)
+                        //Decks.add(card)
                     }
                     _isCardDataReady.postValue(true) // inform the caller we have filled the list with each book
                 }
@@ -388,12 +388,16 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
                     val deckCover = deckSnapshot.child("deckCover").value as? String ?: ""
                     val deckId = deckSnapshot.child("deckId").value as? String ?: ""
                     val deckCountCard = (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
+                    var deckCardList = (deckSnapshot.child("deckCardList")).value as? MutableList<CardClass>
 
-                    val deck = DeckClass(
-                        deckCover,
-                        deckName,
-                        deckCountCard
-                    )
+                    val deck = deckCardList?.let {
+                        DeckClass(
+                            deckCover,
+                            deckName,
+                            deckCountCard,
+                            it
+                        )
+                    }
 
                     //user.add(deck)
                 }
@@ -416,13 +420,14 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 //        }
 
 
-    fun addDeck(deckCover: String, deckName: String, deckCardCount: Int) {
+    fun addDeck(deckCover: String, deckName: String, deckCardCount: Int, deckCardList: MutableList<CardClass>) {
         val deckDataRef = database.getReference("UserData").child(user.uid).child("Decks")
 
         val newDeck = DeckClass(
             deckImage = deckCover,
             deckName = deckName,
-            deckCardCount = deckCardCount
+            deckCardCount = deckCardCount,
+            deckCardList = deckCardList ?: mutableListOf()
         )
 
         val newDeckRef = deckDataRef.push() // Generate a new unique key for the deck
