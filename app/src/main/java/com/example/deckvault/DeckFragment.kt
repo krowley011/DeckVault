@@ -15,6 +15,7 @@ import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -27,8 +28,10 @@ import com.google.firebase.database.ValueEventListener
 class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     private lateinit var deckListRecycler: RecyclerView
     private lateinit var deckAdapter: DeckAdapter
+    private lateinit var deckRepo: DeckRepository
     private var auth = FirebaseAuth.getInstance()
     private var currUser = auth.currentUser
+    private val database = FirebaseDatabase.getInstance()
     val deckRecyclerList = ArrayList<DeckRecyclerData>()
 
     override fun onCreateView(
@@ -65,53 +68,47 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
         val layoutManager = GridLayoutManager(requireContext(), 2)
         deckListRecycler.layoutManager = layoutManager
 
-        deckRecyclerList.clear() // Clear the list before repopulating
-
         deckAdapter = DeckAdapter(deckRecyclerList, this)
         deckListRecycler.adapter = deckAdapter
+        deckListRecycler.setHasFixedSize(true)
+
+        //deckRecyclerList.clear()
+
+        deckRepo = DeckRepository(FirebaseDatabase.getInstance(), currUser!!)
 
         setHasOptionsMenu(true)
         setupDeckMenu(view)
 
         // Populate recycler view
-        getDeckCount()
+        getDecks()
     }
 
+    // Determines which deck in the recycler view was clicked, saves the information about
+    // the selected deck, and switched to a new fragment, passing the collected data
     override fun onDeckClick(position: Int) {
-        Log.d("DeckFragment", "Clicked on deck.")
+        Log.d("DeckFragment", "Clicked on deck nat $position")
 
-        val database = FirebaseDatabase.getInstance()
-        val deckRepo = DeckRepository(database, currUser!!)
+        val deckList = deckRepo.Decks
 
-        if (deckRepo.isDeckDataReady.value == true && !deckRepo.Decks.isNullOrEmpty()) {
-            val deckList = deckRepo.Decks
-            if (position < deckList.size) {
-                val selectedDeck = deckList[position]
+        if (position < deckList.size) {
+            val selectedDeck = deckList[position]
+            val bundle = Bundle()
+            bundle.putParcelable("Selected Deck", selectedDeck)
 
-                val bundle = Bundle()
-                bundle.putParcelable("Selected Deck", selectedDeck)
+            val selectedDeckFragment = SelectedDeck()
+            selectedDeckFragment.arguments = bundle
 
-                val deckPageFragment = DeckPageWithCardsFragment()
-                deckPageFragment.arguments = bundle
+            val transaction = requireActivity().supportFragmentManager.beginTransaction()
 
-                val transaction = requireActivity().supportFragmentManager.beginTransaction()
+            transaction.replace(R.id.frame_layout, selectedDeckFragment)
+            transaction.addToBackStack(null)
+            transaction.commit()
 
-                transaction.replace(R.id.deckPageWithCards, deckPageFragment)
-                transaction.addToBackStack(null)
-                transaction.commit()
-
-                Log.d("DeckFragment", "Transaction completed.")
-            } else {
-                Log.e("DeckFragment", "Position out of bounds.")
-            }
+            Log.d("DeckFragment", "Transaction completed.")
         } else {
-            Log.e("DeckFragment", "Deck data not ready or empty.")
+            Log.e("DeckFragment", "Position out of bounds.")
         }
-
-        deckRepo.stopDeckListener()
     }
-
-
 
     // Pop up menu for deck management
     private fun setupDeckMenu(rootView: View) {
@@ -153,7 +150,12 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
             val cardList: MutableList<CardClass> = mutableListOf()
             if (deckName.isNotEmpty()) {
                 // Create a new deck with the entered name and default values
-                deckRepo!!.addDeck("gs://deckvault-a0189.appspot.com/backofcard.png", deckName, 0, cardList)
+                deckRepo!!.addDeck(
+                    "gs://deckvault-a0189.appspot.com/backofcard.png",
+                    deckName,
+                    0,
+                    cardList
+                )
 
             }
 
@@ -166,52 +168,34 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     }
 
 
-    private fun getDeckCount() {
-        val database = FirebaseDatabase.getInstance()
-        val deckCountRef = database.getReference("UserData/${currUser!!.uid}/deckCount")
-
-        deckCountRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val deckCount = dataSnapshot.getValue(Int::class.java) ?: 0
-
-                if (deckCount > 0) {
-                    getDecks()
-                }
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle cancellation or errors in fetching deck count
-            }
-        })
+    private fun convertDeckClassToRecyclerData(deck: DeckClass): DeckRecyclerData {
+        return DeckRecyclerData(deck.deckImage, deck.deckName, deck.deckCardCount)
     }
 
     // Populate decks for recycler view
+    @SuppressLint("NotifyDataSetChanged")
     private fun getDecks() {
-        val database = FirebaseDatabase.getInstance()
-        val deckListRef = database.getReference("UserData/${currUser!!.uid}/Decks")
+        deckRecyclerList.clear() // Clear recycler view before populating
 
-        deckListRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
+        deckRepo.isDeckDataReady.observe(viewLifecycleOwner, Observer { isDeckDataReady ->
+            if (isDeckDataReady) {
+                val deckCount = deckRepo.Decks.size
 
-                for (deckSnapshot in dataSnapshot.children) {
-                    // Retrieve deck information from Firebase
-                    val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)
-                    val deckName = deckSnapshot.child("deckName").getValue(String::class.java)
-                    val deckCardCount = deckSnapshot.child("deckCardCount").getValue(Int::class.java)
-
-                    if (deckImage != null && deckName != null && deckCardCount != null) {
-                        val deckData = DeckRecyclerData(deckImage, deckName, deckCardCount)
-                        deckRecyclerList.add(deckData)
+                if (deckCount > 0) {
+                    for (decks in deckRepo.Decks) {
+                        deckRecyclerList.add(
+                            DeckRecyclerData(
+                                decks.deckImage,
+                                decks.deckName,
+                                decks.deckCardCount
+                            )
+                        )
                     }
+                    deckAdapter.notifyDataSetChanged()
                 }
-
-                // Update existing adapter's data
-                deckAdapter.updateData(deckRecyclerList)
             }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // Handle cancellation or errors in fetching deck list
-            }
+            deckRepo.stopDeckListener()
         })
     }
 }
+

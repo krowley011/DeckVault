@@ -29,14 +29,13 @@ class DeckAdapter(
             view.setOnClickListener(this)
         }
 
-        override fun onClick(p0: View?) {
+        override fun onClick(view: View?) {
             val position = adapterPosition
             if(position != RecyclerView.NO_POSITION) {
                 Log.d("DeckAdapter", "Clicked on item at position: $position")
                 deckClickListener.onDeckClick(position)
             }
         }
-
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {

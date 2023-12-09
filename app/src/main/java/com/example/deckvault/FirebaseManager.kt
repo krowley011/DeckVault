@@ -14,6 +14,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import java.io.File
 
+
 class UserDataRepository(private val database: FirebaseDatabase, private val userId: String) {
     private val _userData = MutableLiveData<UserClass>()
     val userData: LiveData<UserClass>
@@ -375,43 +376,73 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
     }
 
 
-    private fun fetchDeckData() {
-        val userDataRef = database.getReference("UserData").child(user.uid).child("Decks")
-        Decks.clear()
+//    fun fetchDeckData() {
+//        val userDataRef = database.getReference("UserData").child(user.uid).child("Decks")
+//        Decks.clear()
+//
+//        listener = object : ValueEventListener {
+//            override fun onDataChange(dataSnapshot: DataSnapshot) {
+//                _isDeckDataReady.postValue(false) // Inform the caller the list is ready
+//
+//                for (deckSnapshot in dataSnapshot.children) {
+//                    val deckName = deckSnapshot.child("deckName").value as? String ?: ""
+//                    val deckCover = deckSnapshot.child("deckCover").value as? String ?: ""
+//                    val deckCountCard = (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
+//                    var deckCardList = (deckSnapshot.child("deckCardList")).value as? MutableList<CardClass>
+//
+//                    val deck = deckCardList?.let {
+//                        DeckClass(
+//                            deckCover,
+//                            deckName,
+//                            deckCountCard,
+//                            it
+//                        )
+//                    }
+//
+//                    Decks.add(deck!!)
+//                }
+//
+//                _isDeckDataReady.postValue(true) // Inform the caller we have filled the list with each deck
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                // Handle cancellation or errors here
+//            }
+//        }
+//
+//        userDataRef.addListenerForSingleValueEvent(listener!!)
+//    }
 
-        listener = object : ValueEventListener {
+    fun fetchDeckData() {
+
+        val deckListRef = database.getReference("UserData/${user.uid}/Decks")
+        Decks.clear() // Clear existing data
+
+        deckListRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                _isDeckDataReady.postValue(false) // Inform the caller the list is ready
+                _isDeckDataReady.postValue(false)
 
                 for (deckSnapshot in dataSnapshot.children) {
-                    val deckName = deckSnapshot.child("deckName").value as? String ?: ""
-                    val deckCover = deckSnapshot.child("deckCover").value as? String ?: ""
-                    val deckId = deckSnapshot.child("deckId").value as? String ?: ""
-                    val deckCountCard = (deckSnapshot.child("deckCountCard").value as? Long)?.toInt() ?: 0
-                    var deckCardList = (deckSnapshot.child("deckCardList")).value as? MutableList<CardClass>
+                    // Retrieve deck information from Firebase
+                    val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)
+                    val deckName = deckSnapshot.child("deckName").getValue(String::class.java)
+                    val deckCardCount = deckSnapshot.child("deckCardCount").getValue(Int::class.java)
+                    val deckCardList = (deckSnapshot.child("deckCardList")).value as? MutableList<CardClass>
 
-                    val deck = deckCardList?.let {
-                        DeckClass(
-                            deckCover,
-                            deckName,
-                            deckCountCard,
-                            it
-                        )
+                    if (deckImage != null && deckName != null && deckCardCount != null) {
+                        val deck = DeckClass(deckImage, deckName, deckCardCount, deckCardList ?: mutableListOf())
+                        Decks.add(deck)
                     }
-
-                    deck?.let { Decks.add(it) }
                 }
-
-                _isDeckDataReady.postValue(true) // Inform the caller we have filled the list with each deck
+                _isDeckDataReady.value = true
             }
 
-            override fun onCancelled(error: DatabaseError) {
-                // Handle cancellation or errors here
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle cancellation or errors in fetching deck list
             }
-        }
-
-        userDataRef.addListenerForSingleValueEvent(listener!!)
+        })
     }
+
 //        fun updateDeckData(deck: DeckClass)
 //        {
 //            val userDataRef = database.getReference("UserData").child(user.uid).child("Decks")
