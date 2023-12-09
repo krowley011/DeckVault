@@ -297,6 +297,40 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
             })
         }
 
+        // Define a callback interface to handle success and failure cases
+        interface CardDataCallback {
+            fun onSuccess(initializedCards: List<CardClass>)
+            fun onError(databaseError: DatabaseError)
+        }
+
+        // Modify your retrieveInitializedCards() function to accept a callback parameter
+        fun retrieveInitializedCards(callback: CardDataCallback) {
+            val cardDataRef = FirebaseDatabase.getInstance().getReference("CardData")
+
+            cardDataRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {
+                    val initializedCards = mutableListOf<CardClass>()
+
+                    for (cardSnapshot in dataSnapshot.children) {
+                        // Parse data from dataSnapshot and create CardClass objects
+                        val card = cardSnapshot.getValue(CardClass::class.java)
+                        card?.let {
+                            initializedCards.add(it)
+                        }
+                    }
+
+                    // Notify the callback of success and provide the initialized cards
+                    callback.onSuccess(initializedCards)
+                }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    // Notify the callback of error
+                    callback.onError(databaseError)
+                }
+            })
+        }
+
+
 
         //Function to add image url to storage
         private fun addImage(imageUrl: String, onSuccess: (Uri) -> Unit, onFailure: (Exception) -> Unit) {

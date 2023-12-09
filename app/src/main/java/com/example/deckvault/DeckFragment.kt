@@ -31,8 +31,7 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     private lateinit var deckRepo: DeckRepository
     private var auth = FirebaseAuth.getInstance()
     private var currUser = auth.currentUser
-    private val database = FirebaseDatabase.getInstance()
-    val deckRecyclerList = ArrayList<DeckRecyclerData>()
+    private val deckRecyclerList = ArrayList<DeckRecyclerData>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,8 +70,6 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
         deckAdapter = DeckAdapter(deckRecyclerList, this)
         deckListRecycler.adapter = deckAdapter
         deckListRecycler.setHasFixedSize(true)
-
-        //deckRecyclerList.clear()
 
         deckRepo = DeckRepository(FirebaseDatabase.getInstance(), currUser!!)
 

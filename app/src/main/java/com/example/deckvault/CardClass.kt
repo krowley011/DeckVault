@@ -29,13 +29,17 @@ data class CardClass (
         mutableListOf<String>().apply {
             parcel.readList(this, String::class.java.classLoader)
         },
-        parcel.readInt(),
-        parcel.readInt(),
+        parcel.readInt() ?: 0,
+        parcel.readInt() ?: 0,
         parcel.readString() ?: "",
-        parcel.readInt(),
+        parcel.readInt() ?:0,
         parcel.readBoolean(),
-        parcel.readInt(),
+        parcel.readInt() ?: 0,
         parcel.readString() ?: ""
+    )
+
+    constructor() : this(
+        null, null, null, null, null, mutableListOf(), null, null, null, null, false, null, null
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {

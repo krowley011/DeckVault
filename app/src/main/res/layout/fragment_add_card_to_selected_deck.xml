@@ -2,10 +2,9 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/selectedDeck"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".SelectedDeck">
+    tools:context=".AddCardToSelectedDeck">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -37,10 +36,10 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/selectedDeckNameTV"
+            android:id="@+id/AddCardTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Deck Name"
+            android:text="Add Card"
             android:textColor="#FFFFFF"
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
@@ -49,62 +48,19 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
-        <TextView
-            android:id="@+id/selectedDeckCardCountTV"
-            android:layout_width="wrap_content"
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/cardSearchView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
-            android:text="Card Count: 0"
-            android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
-
-        <ImageButton
-            android:id="@+id/selectedDeckMenuBTN"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="24dp"
-            android:background="#00FFFFFF"
-            android:contentDescription="Options"
-            android:scaleX="2"
-            android:scaleY="2"
-            android:src="@drawable/menu"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/rectangle" />
-
-        <ImageButton
-            android:id="@+id/selectedDeckSearchBTN"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="24dp"
-            android:background="#00FFFFFF"
-            android:contentDescription="Search"
-            android:scaleX="2.5"
-            android:scaleY="2.5"
-            android:src="@drawable/search"
-            app:layout_constraintBottom_toTopOf="@+id/rectangle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="#FFFFFF" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addCardFAB"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/blue"
-            android:clickable="true"
-            android:contentDescription="Add Card Button"
-            android:src="@drawable/plus_sign"
-            app:backgroundTint="@color/blue"
-            app:fabSize="normal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:focusable="false"
+            app:iconifiedByDefault="false"
             app:layout_constraintEnd_toEndOf="parent"
-            app:maxImageSize="35dp"
-            app:shapeAppearance="@style/ShapeAppearance.Material3.Corner.Full" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/rectangle"
+            app:queryHint="Card name" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -113,17 +69,18 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/selectedDeckMenuBTN">
+            app:layout_constraintTop_toBottomOf="@+id/cardSearchView">
 
             <androidx.recyclerview.widget.RecyclerView
 
-                android:id="@+id/selectedDeckRecylView"
+                android:id="@+id/returnedCardSearchRecylView"
                 android:layout_width="350dp"
                 android:layout_height="500dp"
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="32dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="32dp" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
