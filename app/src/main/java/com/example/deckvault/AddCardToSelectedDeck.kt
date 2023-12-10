@@ -7,15 +7,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.squareup.picasso.Picasso
 
 
@@ -34,17 +38,6 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
-
-        if (selectedDeck != null) {
-            val deckName = selectedDeck.deckName
-            val deckImage = selectedDeck.deckImage
-            val deckCardCount = selectedDeck.deckCardCount
-            val deckCardList = selectedDeck.deckCardList
-        } else {
-            Log.e("AddCardToSelectedDeckFragment", "Selected Deck is null.")
-        }
 
         cardListRecycler = view.findViewById(R.id.returnedCardSearchRecylView)
         // Grid layout to display two items per row
@@ -114,7 +107,8 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
                     AddCardRecyclerData(
                         card.cardImage ?: "",
                         card.cardName ?: "",
-                        card.cardSubName ?: ""
+                        card.cardSubName ?: "",
+                        card.cardNumber ?: 0
                     )
                 }
 
@@ -141,7 +135,8 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
                         AddCardRecyclerData(
                             card.cardImage,
                             card.cardName,
-                            card.cardSubName
+                            card.cardSubName,
+                            card.cardNumber
                         )
                     )
                 }
@@ -158,6 +153,27 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
     override fun onCardClick(position: Int) {
         val selectedCard = addCardRecyclerList[position]
 
+        val cardRef = FirebaseDatabase.getInstance().getReference("CardData").child(selectedCard.cardNumber.toString())
+
+        cardRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Retrieve the detailed information of the card
+                val detailedCard = dataSnapshot.getValue(CardClass::class.java)
+
+                detailedCard?.let { card ->
+                    val dialog = createDialogWithCardDetails(card)
+                    dialog.show()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors while retrieving detailed card info
+                Log.e("CardDetailFetch", "Error fetching card info: $databaseError")
+            }
+        })
+    }
+
+    private fun createDialogWithCardDetails(card: CardClass): Dialog {
         // Initialize dialog box
         val dialog = Dialog(requireContext())
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -171,12 +187,65 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         val cardSubName: TextView = dialog.findViewById(R.id.addCardPU_Subname)
 
         // Set data to the views
-        cardName.text = selectedCard.cardName
-        cardSubName.text = selectedCard.cardSubName
-        Picasso.get().load(selectedCard.cardImage).into(cardImage)
+        cardName.text = card.cardName
+        cardSubName.text = card.cardSubName
+        Picasso.get().load(card.cardImage).into(cardImage)
 
-        // Show the dialog
-        dialog.show()
+        val addBTN: Button = dialog.findViewById(R.id.addcardPU_BTN)
+
+        // Set onClickListener for the add button
+        addBTN.setOnClickListener {
+            val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
+            if (selectedDeck != null) {
+                addCard(card, viewLifecycleOwner)
+            }
+            dialog.dismiss() // Dismiss the dialog after adding the card
+        }
+
+        return dialog
+    }
+
+    private fun addCard(card: CardClass, owner: LifecycleOwner) {
+        val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
+        val database = FirebaseDatabase.getInstance()
+        val deckRef = database.getReference("UserData").child(currUser!!.uid).child("Decks")
+
+        // Retrieve the list of decks for the user
+        deckRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                for (deckSnapshot in dataSnapshot.children) {
+                    val deck = deckSnapshot.getValue(DeckClass::class.java)
+                    if (deck != null && deck.deckName == selectedDeck!!.deckName) {
+                        val selectedDeckId = deckSnapshot.key // Retrieve the ID of the matching deck
+                        if (selectedDeckId != null) {
+                            // Add card to the deck
+                            val cardDataRef = deckRef.child(selectedDeckId).child("Cards")
+                            cardDataRef.push().setValue(card) // Add the card to the selected deck's cards
+
+                            // Retrieve the decks card count and increment
+                            val deckCardCountRef = deckRef.child(selectedDeckId).child("deckCardCount")
+                            deckCardCountRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(countSnapshot: DataSnapshot) {
+                                    val currentCount = countSnapshot.getValue(Int::class.java) ?: 0
+                                    deckCardCountRef.setValue(currentCount + 1)
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    // Handle errors while fetching the card count
+                                    Log.e("AddCard", "Error fetching card count: $databaseError")
+                                }
+                            })
+                            break
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors while fetching deck data
+                Log.e("AddCard", "Error fetching deck data: $databaseError")
+            }
+        })
     }
 
 }
