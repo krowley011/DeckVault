@@ -221,8 +221,9 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
                         val selectedDeckId = deckSnapshot.key // Retrieve the ID of the matching deck
                         if (selectedDeckId != null) {
                             // Add card to the deck
-                            val cardDataRef = deckRef.child(selectedDeckId).child("Cards")
-                            cardDataRef.push().setValue(card) // Add the card to the selected deck's cards
+                            val cardNumber = card.cardNumber.toString()
+                            val cardDataRef = deckRef.child(selectedDeckId).child("Cards").child(cardNumber)
+                            cardDataRef.setValue(card) // Add the card to the selected deck's cards
                             recentRepo.addRecentCard(card) // Add card to recently added feed
 
                             // Retrieve the decks card count and increment

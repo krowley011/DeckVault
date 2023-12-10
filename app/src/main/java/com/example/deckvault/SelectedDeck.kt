@@ -26,6 +26,7 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
     private lateinit var sdCardListRecycler: RecyclerView
     private lateinit var selectedDeckAdapter: SelectedDeckAdapter
     private var selectedDeckRecyclerList = ArrayList<SelectedDeckRecyclerData>()
+    private lateinit var selectedDeckId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,43 +41,54 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
         val deckCountTV: TextView = rootView.findViewById(R.id.selectedDeckCardCountTV)
         val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
         val database = FirebaseDatabase.getInstance()
-        val deckRef = database.getReference("UserData/${currUser!!.uid}/Decks")
+        val deckRef = database.getReference("UserData").child(currUser!!.uid).child("Decks")
 
-
-        // Retrieving the decks card count to display
-        deckRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        val valEventListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                for (deckSnapshot in dataSnapshot.children) {
-                    val deck = deckSnapshot.getValue(DeckClass::class.java)
-                    // Retrieve the ID of the matching deck
-                    if (deck != null && deck.deckName == selectedDeck!!.deckName) {
-                        val selectedDeckId = deckSnapshot.key
-                        if (selectedDeckId != null) {
-                            // Get the card count of the deck
-                            val deckCardCountRef = deckRef.child(selectedDeckId).child("deckCardCount")
-                            deckCardCountRef.addListenerForSingleValueEvent(object :
-                                ValueEventListener {
-                                override fun onDataChange(countSnapshot: DataSnapshot) {
-                                    // Display the card count in the text view
-                                    val cardCount = countSnapshot.getValue(Int::class.java) ?: 0
-                                    deckCountTV.text = "Card Count: $cardCount"
-                                }
+                var selectedDeckId: String? = null
 
-                                override fun onCancelled(databaseError: DatabaseError) {
-                                    Log.e(
-                                        "SelectedDeckFragment", "Error fetching deck card count: $databaseError"
-                                    )
-                                }
-                            })
-                        }
+                for (snapshot in dataSnapshot.children) {
+                    val deck = snapshot.getValue(DeckClass::class.java)
+
+                    // Check if the deck's name matches the selected deck's name
+                    if (deck != null && deck.deckName == selectedDeck?.deckName) {
+                        selectedDeckId = snapshot.key // Retrieve the ID of the matching deck
+                        break
                     }
+                }
+
+                // Use the retrieved selectedDeckId as needed
+                if (selectedDeckId != null) {
+                    // Perform actions with the selectedDeckId
+                    // Get the card count of the deck
+                    val deckCardCountRef = deckRef.child(selectedDeckId).child("deckCardCount")
+                    deckCardCountRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(countSnapshot: DataSnapshot) {
+                            // Display the card count in the text view
+                            val cardCount = countSnapshot.getValue(Int::class.java) ?: 0
+                            deckCountTV.text = "Card Count: $cardCount"
+                        }
+
+                        override fun onCancelled(databaseError: DatabaseError) {
+                            // Handle errors
+                            Log.e("SelectedDeck", "Error retrieving deckCardCount")
+                        }
+                    })
+
+                    getDeckInformationThenFetchCards()
+                } else {
+                    // Handle case where the selected deck is not found
                 }
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                Log.e("SelectedDeckFragment", "Error fetching deck data: $databaseError")
+                // Handle errors
+                Log.e("SelectedDeck", "Error: ${databaseError.message}")
             }
-        })
+        }
+
+        // Attach the listener
+        deckRef.addListenerForSingleValueEvent(valEventListener)
 
         return rootView
     }
@@ -104,7 +116,7 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
         sdCardListRecycler.setHasFixedSize(true)
 
         // Populate recycler view
-        getSelectedDeckCards()
+        getDeckInformationThenFetchCards()
 
     }
 
@@ -153,8 +165,7 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
                                 addCardFragment.arguments = bundle
 
                                 // Perform the fragment transaction
-                                val transaction =
-                                    requireActivity().supportFragmentManager.beginTransaction()
+                                val transaction = requireActivity().supportFragmentManager.beginTransaction()
                                 transaction.replace(R.id.frame_layout, addCardFragment)
                                 transaction.addToBackStack(null)
                                 transaction.commit()
@@ -168,60 +179,76 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
         }
     }
 
-    private fun getSelectedDeckCards() {
-        selectedDeckRecyclerList.clear() // Clear recycler view before populating
-
+    private fun getDeckInformationThenFetchCards() {
         val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
         val database = FirebaseDatabase.getInstance()
-        val deckRef = database.getReference("UserData/${currUser!!.uid}/Decks")
+        val deckRef = database.getReference("UserData").child(currUser!!.uid)
+            .child("Decks")
 
-        // Retrieving the deck id for the selected deck
-        deckRef.addListenerForSingleValueEvent(object : ValueEventListener {
-            override fun onDataChange(dataSnapshot: DataSnapshot) {
-                for (deckSnapshot in dataSnapshot.children) {
-                    val deck = deckSnapshot.getValue(DeckClass::class.java)
-                    if (deck != null && deck.deckName == selectedDeck!!.deckName) {
-                        val selectedDeckId = deckSnapshot.key.toString()
+        if (selectedDeck != null) {
+            // Retrieving the deck id for the selected deck
+            deckRef.addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(dataSnapshot: DataSnapshot) {for (deckSnapshot in dataSnapshot.children) {
+                        val deck = deckSnapshot.getValue(DeckClass::class.java)
+                        if (deck != null && deck.deckName == selectedDeck!!.deckName) {
+                            val selectedDeckId = deckSnapshot.key.toString()
 
-                        // Retrieve the cards in the selected deck
-                        val deckCardRef = database.getReference("UserData").child(currUser!!.uid)
-                            .child("Decks").child(selectedDeckId).child("Cards")
-
-                        deckCardRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                            override fun onDataChange(cardSnapshot: DataSnapshot) {
-                                for (cardDataSnapshot in cardSnapshot.children) {
-                                    val card = cardDataSnapshot.getValue(CardClass::class.java)
-                                    card?.let {
-                                        val recyclerData = SelectedDeckRecyclerData(
-                                            card.cardImage ?: "",
-                                            card.cardName ?: "",
-                                            card.cardSubName ?: "",
-                                            card.cardNumber ?: 0
-                                        )
-                                        selectedDeckRecyclerList.add(recyclerData)
-                                    }
-                                }
-                                selectedDeckAdapter.notifyDataSetChanged()
-                            }
-
-                            override fun onCancelled(databaseError: DatabaseError) {
-                                // Handle errors while fetching card data
-                                Log.e("SelectedDeck", "Error fetching deck card data: $databaseError")
-                            }
-                        })
-                        break
+                            fetchCardsForSelectedDeck(selectedDeckId)
+                            break
+                        }
                     }
                 }
+
+                override fun onCancelled(databaseError: DatabaseError) {
+                    Log.e("SelectedDeck", "Error fetching deck data: $databaseError")
+                }
+            })
+        } else {
+            Log.e("SelectedDeck", "Selected Deck is null")
+        }
+    }
+
+    // Function to fetch cards for the selected deck
+    private fun fetchCardsForSelectedDeck(selectedDeckId: String) {
+        val database = FirebaseDatabase.getInstance()
+        val deckCardRef = database.getReference("UserData").child(currUser!!.uid)
+            .child("Decks").child(selectedDeckId).child("Cards")
+
+        val valEventListener = object : ValueEventListener {
+            override fun onDataChange(cardSnapshot: DataSnapshot) {
+                selectedDeckRecyclerList.clear()
+
+                for (cardDataSnapshot in cardSnapshot.children) {
+                   val card = cardDataSnapshot.getValue(CardClass::class.java)
+                    card?.let {
+                        val recyclerData = SelectedDeckRecyclerData(
+                            card.cardImage ?: "",
+                            card.cardName ?: "",
+                            card.cardSubName ?: "",
+                            card.cardNumber ?: 0
+                        )
+                        selectedDeckRecyclerList.add(recyclerData)
+                    }
+                }
+                selectedDeckAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
-                // Handle errors while fetching card data
-                Log.e("SelectedDeck", "Error fetching deck card data: $databaseError")
+                // Handle errors
+                Log.e("SelectedDeck", "Error: ${databaseError.message}")
             }
-        })
+        }
+
+        // Attach the listener
+        deckCardRef.addListenerForSingleValueEvent(valEventListener)
     }
 
     override fun onCardClick(position: Int) {
-        TODO("Not yet implemented")
+        val cardDetailPage = CardDetailPage()
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
+
+        transaction.replace(R.id.frame_layout, cardDetailPage)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 }

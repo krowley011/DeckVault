@@ -164,11 +164,6 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
         dialog.show()
     }
 
-
-    private fun convertDeckClassToRecyclerData(deck: DeckClass): DeckRecyclerData {
-        return DeckRecyclerData(deck.deckImage, deck.deckName, deck.deckCardCount)
-    }
-
     // Populate decks for recycler view
     @SuppressLint("NotifyDataSetChanged")
     private fun getDecks() {

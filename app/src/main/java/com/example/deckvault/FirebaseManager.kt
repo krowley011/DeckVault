@@ -117,6 +117,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
 
 class CardRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
         public var Cards = mutableListOf<CardClass>()
+        private val deckId : String = ""
         private val _isCardDataReady = MutableLiveData<Boolean>()
         val isCardDataReady: LiveData<Boolean>
             get() = _isCardDataReady
@@ -124,7 +125,7 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
         private var listener: ValueEventListener? = null
 
         init {
-            fetchCardData()
+            fetchCardData(deckId)
         }
 
         fun removeCard(card: CardClass, owner: LifecycleOwner) {
@@ -145,9 +146,9 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
             }
         }
 
-        fun fetchCardData() {
-            val profileDataRef = database.getReference("UserData").child(user.uid).child("Cards")
-            //Decks.clear()
+        fun fetchCardData(deckId: String) {
+            val profileDataRef = database.getReference("UserData").child(user.uid).child("Decks").child(deckId).child("Cards")
+            Cards.clear()
             listener = object : ValueEventListener {
                 override fun onDataChange(dataSnapshot: DataSnapshot) {
                     _isCardDataReady.postValue(false) // inform the caller the list is not ready
@@ -182,7 +183,7 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                             cardDescription
                         )
                         //Need to specify which deck to add card to
-                        //Decks.add(card)
+                        Cards.add(card)
                     }
                     _isCardDataReady.postValue(true) // inform the caller we have filled the list with each book
                 }
@@ -349,16 +350,6 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                 }
         }
 
-        fun createCard(name: String, imageUrl: String, number: Int, subName: String, color: String,
-            types: String, damage: Int, defense: Int, action: String, ink: Int, inkable: Boolean,
-            lore: Int, description: String): CardClass {
-
-            val cardTypes = types.split(", ").toMutableList()
-
-            return CardClass(name, imageUrl, number, subName, color, cardTypes, damage, defense,
-                action, ink, inkable, lore, description)
-        }
-
         fun stopCardListener()
         {
             listener?.let {
@@ -424,7 +415,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
                     val deckImage = deckSnapshot.child("deckImage").getValue(String::class.java)
                     val deckName = deckSnapshot.child("deckName").getValue(String::class.java)
                     val deckCardCount = deckSnapshot.child("deckCardCount").getValue(Int::class.java)
-                    val deckCardList = (deckSnapshot.child("deckCardList")).value as? MutableList<CardClass>
+                    val deckCardList = (deckSnapshot.child("Cards")).value as? MutableList<CardClass>
 
                     if (deckImage != null && deckName != null && deckCardCount != null) {
                         val deck = DeckClass(deckImage, deckName, deckCardCount, deckCardList ?: mutableListOf())
@@ -512,24 +503,6 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
             listener = null
         }
     }
-
-    // Not working, not going to utilized at this time though
-//    fun clearUserDecks(owner: LifecycleOwner) {
-//        val currentUser = FirebaseAuth.getInstance().currentUser
-//        if (currentUser != null) {
-//            val deckRepository = DeckRepository(database, currentUser)
-//            deckRepository.Decks.forEach { deck ->
-//                deckRepository.removeDeck(deck, owner)
-//            }
-//            // Signal that the user library has been cleared
-//            _isDeckDataReady.postValue(true)
-//        } else {
-//            Log.e("DeckRepository", "User ID is null. Cannot clear decks.")
-//            _isDeckDataReady.postValue(false)
-//        }
-//    }
-
-
 }
 
 class RecentRepository(private val database: FirebaseDatabase, private val user: FirebaseUser)
@@ -601,7 +574,8 @@ class RecentRepository(private val database: FirebaseDatabase, private val user:
 
     fun addRecentCard(card: CardClass) {
         val userDataRef = database.getReference("UserData").child(currentUser!!.uid).child("Recent Cards")
-        val newCardRef = userDataRef.push()
+        val cardNumber = card.cardNumber.toString()
+        val newCardRef = userDataRef.child(cardNumber)
 
         val cardDetails = mapOf(
             "Card Name" to card.cardName,
