@@ -81,7 +81,7 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     }
 
     // Determines which deck in the recycler view was clicked, saves the information about
-    // the selected deck, and switched to a new fragment, passing the collected data
+    // the selected deck, and switches to a new fragment, passing the collected data
     override fun onDeckClick(position: Int) {
         Log.d("DeckFragment", "Clicked on deck nat $position")
 

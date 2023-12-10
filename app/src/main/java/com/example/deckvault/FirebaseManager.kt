@@ -115,7 +115,7 @@ class UserDataRepository(private val database: FirebaseDatabase, private val use
     }
 }
 
-    class CardRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
+class CardRepository(private val database: FirebaseDatabase, private val user: FirebaseUser) {
         public var Cards = mutableListOf<CardClass>()
         private val _isCardDataReady = MutableLiveData<Boolean>()
         val isCardDataReady: LiveData<Boolean>
@@ -532,9 +532,9 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 
 }
 
-class RecentRepository(private val database: FirebaseDatabase, private val username: String, private val friendList: MutableList<CardClass>)
+class RecentRepository(private val database: FirebaseDatabase, private val user: FirebaseUser)
 {
-    public var recentCardFeed = mutableListOf<CardClass>()
+    private var recentCardFeed = mutableListOf<CardClass>()
     private val _isRecentCardDataReady = MutableLiveData<Boolean>()
     val isRecentDataReady: LiveData<Boolean>
         get() = _isRecentCardDataReady
@@ -545,10 +545,10 @@ class RecentRepository(private val database: FirebaseDatabase, private val usern
 
     init
     {
-        //fetchRecentData()
+        fetchRecentData()
     }
 
-    fun fetchRecentData()
+    private fun fetchRecentData()
     {
         // Firebase Path References
         val userDataRef = database.getReference("UserData").child(currentUser!!.uid).child("Recent Cards")
@@ -597,6 +597,38 @@ class RecentRepository(private val database: FirebaseDatabase, private val usern
             override fun onCancelled(error: DatabaseError) { }
         }
         userDataRef.addListenerForSingleValueEvent(listener!!)
+    }
+
+    fun addRecentCard(card: CardClass) {
+        val userDataRef = database.getReference("UserData").child(currentUser!!.uid).child("Recent Cards")
+        val newCardRef = userDataRef.push()
+
+        val cardDetails = mapOf(
+            "Card Name" to card.cardName,
+            "Card Image" to card.cardImage,
+            "Card Number" to card.cardNumber,
+            "Card SubName" to card.cardSubName,
+            "Card Color" to card.cardColor,
+            "Card Classes" to card.cardClasses,
+            "Card Damage" to card.cardDamage,
+            "Card Defense" to card.cardDefense,
+            "Card Action" to card.cardAction,
+            "Card Ink" to card.cardInk,
+            "Card Inkable" to card.cardInkable,
+            "Card Lore" to card.cardLore,
+            "Card Description" to card.cardDescription
+        )
+
+        newCardRef.setValue(cardDetails)
+
+        recentCardFeed.add(card)
+
+        // Limit to 10 cards in recent feed
+        if (recentCardFeed.size > 10) {
+            recentCardFeed.removeAt(0) // Remove the oldest card if the list exceeds the limit
+        }
+
+        _isRecentCardDataReady.postValue(true)
     }
 
     fun stopRecentListener()

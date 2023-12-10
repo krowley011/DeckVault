@@ -30,7 +30,7 @@ class AddCardAdapter (
             override fun onClick(view: View?) {
                 val position = adapterPosition
                 if(position != RecyclerView.NO_POSITION) {
-                    Log.d("DeckAdapter", "Clicked on item at position: $position")
+                    Log.d("AddCardAdapter", "Clicked on item at position: $position")
                     cardClickListener.onCardClick(position)
                 }
             }

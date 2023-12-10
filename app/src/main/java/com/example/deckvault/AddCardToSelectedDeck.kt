@@ -210,6 +210,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         val database = FirebaseDatabase.getInstance()
         val deckRef = database.getReference("UserData").child(currUser!!.uid).child("Decks")
         val userRef = database.getReference("UserData").child(currUser!!.uid)
+        val recentRepo = RecentRepository(database, currUser!!)
 
         // Retrieve the list of decks for the user
         deckRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -222,6 +223,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
                             // Add card to the deck
                             val cardDataRef = deckRef.child(selectedDeckId).child("Cards")
                             cardDataRef.push().setValue(card) // Add the card to the selected deck's cards
+                            recentRepo.addRecentCard(card) // Add card to recently added feed
 
                             // Retrieve the decks card count and increment
                             val deckCardCountRef = deckRef.child(selectedDeckId).child("deckCardCount")
