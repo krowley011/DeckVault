@@ -1,10 +1,14 @@
 package com.example.deckvault
 
+import android.app.Dialog
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -12,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.squareup.picasso.Picasso
 
 
 class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
@@ -55,43 +60,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         // Populate recycler view
         getInitializedCards()
 
-        val searchView = view.findViewById<SearchView>(R.id.cardSearchView)
-
-        // Set an OnQueryTextListener to handle search actions
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                // Perform actions when search is submitted (e.g., perform search)
-                if (!query.isNullOrEmpty()) {
-                    performSearch(query)
-                }
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                // Perform actions while typing in the search bar
-                // Update search results dynamically as the text changes
-                if (!newText.isNullOrEmpty()) {
-                    updateSearchResults(newText)
-                } else {
-                    // Handle case when search query is cleared
-                    // For example, show default list or clear search results
-                    // clearSearchResults()
-                }
-                return true
-            }
-        })
-    }
-
-    // Function to perform search based on the query submitted
-    private fun performSearch(query: String) {
-        val matchingCards = cardRepo.Cards.filter { card ->
-            card.cardName?.contains(query, ignoreCase = true) == true ||
-                    card.cardSubName?.contains(query, ignoreCase = true) == true
-        }
-    }
-    // Function to update search results dynamically as the text changes
-    private fun updateSearchResults(newText: String) {
-        performSearch(newText)
+        setUpSearchListener()
     }
 
     override fun onCreateView(
@@ -100,6 +69,65 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add_card_to_selected_deck, container, false)
+    }
+
+    // Search listener for search bar, updates as the user types in a card name or subname
+    private fun setUpSearchListener() {
+        val searchView = requireView().findViewById<SearchView>(R.id.cardSearchView)
+
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (!query.isNullOrEmpty()) {
+                    performSearch(query)
+                } else {
+                    getInitializedCards()
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Optional: Perform search while the user types
+                newText?.let { searchText ->
+                    if (searchText.isNotEmpty()) {
+                        performSearch(searchText)
+                    } else {
+                        // If the text is empty, reload all cards
+                        getInitializedCards()
+                    }
+                }
+                return true
+            }
+        })
+    }
+
+    private fun performSearch(query: String) {
+        cardRepo.retrieveInitializedCards(object : CardRepository.CardDataCallback {
+            override fun onSuccess(initializedCards: List<CardClass>) {
+                // Compare user input to cards in the initialized cards
+                val matchingCards = initializedCards.filter { card ->
+                    card.cardName?.startsWith(query, ignoreCase = true) == true ||
+                            card.cardSubName?.startsWith(query, ignoreCase = true) == true
+                }
+
+                // Convert from cardClass to AddCardRecyclerData to display cards
+                val convertedCards = matchingCards.map { card ->
+                    AddCardRecyclerData(
+                        card.cardImage ?: "",
+                        card.cardName ?: "",
+                        card.cardSubName ?: ""
+                    )
+                }
+
+                addCardRecyclerList.clear()
+                addCardRecyclerList.addAll(convertedCards)
+                cardAdapter.notifyDataSetChanged()
+            }
+
+            override fun onError(databaseError: DatabaseError) {
+                // Handle error case
+                Log.e("GetInitializedCards", "Error fetching cards: $databaseError")
+            }
+        })
     }
 
     // Retrieve initialized cards to display in recycler view
@@ -128,8 +156,27 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
     }
 
     override fun onCardClick(position: Int) {
-        TODO("Not yet implemented")
-    }
+        val selectedCard = addCardRecyclerList[position]
 
+        // Initialize dialog box
+        val dialog = Dialog(requireContext())
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setCancelable(true)
+        dialog.setContentView(R.layout.addcard_detailpopup)
+        dialog.window?.setBackgroundDrawableResource(R.drawable.rounded_dialog)
+
+        // Find views in the dialog layout
+        val cardImage: ImageView = dialog.findViewById(R.id.addCardPU_Image)
+        val cardName: TextView = dialog.findViewById(R.id.addCardPU_Name)
+        val cardSubName: TextView = dialog.findViewById(R.id.addCardPU_Subname)
+
+        // Set data to the views
+        cardName.text = selectedCard.cardName
+        cardSubName.text = selectedCard.cardSubName
+        Picasso.get().load(selectedCard.cardImage).into(cardImage)
+
+        // Show the dialog
+        dialog.show()
+    }
 
 }
