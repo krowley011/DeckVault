@@ -209,6 +209,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         val selectedDeck: DeckClass? = arguments?.getParcelable("Selected Deck")
         val database = FirebaseDatabase.getInstance()
         val deckRef = database.getReference("UserData").child(currUser!!.uid).child("Decks")
+        val userRef = database.getReference("UserData").child(currUser!!.uid)
 
         // Retrieve the list of decks for the user
         deckRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -224,6 +225,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
 
                             // Retrieve the decks card count and increment
                             val deckCardCountRef = deckRef.child(selectedDeckId).child("deckCardCount")
+                            val userCardCountRef = userRef.child("cardCount")
                             deckCardCountRef.addListenerForSingleValueEvent(object : ValueEventListener {
                                 override fun onDataChange(countSnapshot: DataSnapshot) {
                                     val currentCount = countSnapshot.getValue(Int::class.java) ?: 0
@@ -232,7 +234,19 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
 
                                 override fun onCancelled(databaseError: DatabaseError) {
                                     // Handle errors while fetching the card count
-                                    Log.e("AddCard", "Error fetching card count: $databaseError")
+                                    Log.e("AddCard", "Error fetching deck card count: $databaseError")
+                                }
+                            })
+
+                            userCardCountRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(countSnapshot: DataSnapshot) {
+                                    val currentCount = countSnapshot.getValue(Int::class.java) ?: 0
+                                    userCardCountRef.setValue(currentCount + 1)
+                                }
+
+                                override fun onCancelled(databaseError: DatabaseError) {
+                                    // Handle errors while fetching the card count
+                                    Log.e("AddCard", "Error fetching user card count: $databaseError")
                                 }
                             })
                             break
