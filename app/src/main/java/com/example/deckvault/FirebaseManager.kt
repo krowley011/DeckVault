@@ -638,7 +638,7 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
 
 class RecentRepository(private val database: FirebaseDatabase, private val user: FirebaseUser)
 {
-    private var recentCardFeed = mutableListOf<CardClass>()
+    var recentCardFeed = mutableListOf<CardClass>()
     private val _isRecentCardDataReady = MutableLiveData<Boolean>()
     val isRecentDataReady: LiveData<Boolean>
         get() = _isRecentCardDataReady

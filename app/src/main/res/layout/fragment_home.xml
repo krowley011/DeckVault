@@ -90,13 +90,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hpRecentsTV" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:layout_width="259dp"
-            android:layout_height="343dp"
-            android:layout_marginTop="24dp"
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/hpDivider" />
+            app:layout_constraintTop_toBottomOf="@+id/hpDivider">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recentCardRecyclView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginTop="24dp" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
