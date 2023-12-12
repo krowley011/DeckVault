@@ -1,6 +1,7 @@
 package com.example.deckvault
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -113,14 +114,49 @@ class HomeFragment : Fragment(), RecentCardAdapter.OnCardClickListener {
     }
 
     override fun onCardClick(position: Int) {
-        val cardDetailPage = CardDetailPage()
-        val transaction = requireActivity().supportFragmentManager.beginTransaction()
-
-        transaction.replace(R.id.frame_layout, cardDetailPage)
-        transaction.addToBackStack(null)
-        transaction.commit()
-
+            val clickedCard = recentCardRecyclerList[position]
+            fetchSelectedCardDetails(clickedCard)
     }
+
+    private fun fetchSelectedCardDetails(clickedCard: RecentCardRecyclerData) {
+        val database = FirebaseDatabase.getInstance()
+        val recentCardRef = database.getReference("UserData").child(currUser!!.uid).child("Recent Cards")
+
+        recentCardRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                var selectedCard: CardClass? = null
+
+                for (cardSnapshot in dataSnapshot.children) {
+                    val cardNumber = cardSnapshot.child("Card Number").value as? Int ?: 0
+                    if (cardNumber == clickedCard.cardNumber) {
+                        selectedCard = cardSnapshot.getValue(CardClass::class.java)
+                        break
+                    }
+                }
+
+                selectedCard?.let { card ->
+                    // Bundle the card details
+                    val bundle = Bundle()
+                    bundle.putParcelable("selectedCard", card)
+
+                    // Pass the bundle to the new fragment
+                    val cardDetailPage = CardDetailPage()
+                    cardDetailPage.arguments = bundle
+
+                    val transaction = requireActivity().supportFragmentManager.beginTransaction()
+                    transaction.replace(R.id.frame_layout, cardDetailPage)
+                    transaction.addToBackStack(null)
+                    transaction.commit()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors
+                Log.e("FetchCardDetails", "Error: ${databaseError.message}")
+            }
+        })
+    }
+
 
 }
 

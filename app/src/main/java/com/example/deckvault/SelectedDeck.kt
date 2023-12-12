@@ -45,14 +45,14 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
 
         val valEventListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                var selectedDeckId: String? = null
+                // var selectedDeckId: String? = null
 
                 for (snapshot in dataSnapshot.children) {
                     val deck = snapshot.getValue(DeckClass::class.java)
 
                     // Check if the deck's name matches the selected deck's name
                     if (deck != null && deck.deckName == selectedDeck?.deckName) {
-                        selectedDeckId = snapshot.key // Retrieve the ID of the matching deck
+                        selectedDeckId = snapshot.key.toString() // Retrieve the ID of the matching deck
                         break
                     }
                 }
@@ -244,11 +244,53 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
     }
 
     override fun onCardClick(position: Int) {
-        val cardDetailPage = CardDetailPage()
-        val transaction = requireActivity().supportFragmentManager.beginTransaction()
 
-        transaction.replace(R.id.frame_layout, cardDetailPage)
-        transaction.addToBackStack(null)
-        transaction.commit()
+        val clickedCard = selectedDeckRecyclerList[position]
+        fetchSelectedCardDetails(clickedCard)
+    }
+
+    private fun fetchSelectedCardDetails(clickedCard: SelectedDeckRecyclerData) {
+        val database = FirebaseDatabase.getInstance()
+        val deckCardRef = database.getReference("UserData").child(currUser!!.uid)
+            .child("Decks").child(selectedDeckId).child("Cards")
+
+        val valEventListener = object : ValueEventListener {
+            override fun onDataChange(cardSnapshot: DataSnapshot) {
+                var selectedCard: CardClass? = null
+
+                for (cardDataSnapshot in cardSnapshot.children) {
+                    val card = cardDataSnapshot.getValue(CardClass::class.java)
+                    if (card != null) {
+                        if (card.cardNumber == clickedCard.cardNumber) {
+                            selectedCard = cardSnapshot.getValue(CardClass::class.java)
+                            break
+                        }
+                    }
+                }
+
+                selectedCard?.let { card ->
+                    // Bundle the card details
+                    val bundle = Bundle()
+                    bundle.putParcelable("selectedCard", card)
+
+                    // Pass the bundle to the new fragment
+                    val cardDetailPage = CardDetailPage()
+                    cardDetailPage.arguments = bundle
+
+                    val transaction = requireActivity().supportFragmentManager.beginTransaction()
+                    transaction.replace(R.id.frame_layout, cardDetailPage)
+                    transaction.addToBackStack(null)
+                    transaction.commit()
+                }
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                // Handle errors
+                Log.e("SelectedDeck", "Error: ${databaseError.message}")
+            }
+        }
+
+        // Attach the listener
+        deckCardRef.addListenerForSingleValueEvent(valEventListener)
     }
 }
