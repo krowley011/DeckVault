@@ -28,7 +28,7 @@
             <TextView
                 android:id="@+id/selectedDeckCardNameTV"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lines="2"
                 android:text="Card name"
@@ -39,7 +39,7 @@
             <TextView
                 android:id="@+id/selectedDeckCardSubName"
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
+                android:layout_height="wrap_content"
                 android:gravity="center"
                 android:lines="2"
                 android:text="Card Subname"

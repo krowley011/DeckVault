@@ -248,6 +248,31 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
             val cardDataRef = FirebaseDatabase.getInstance().getReference("CardData")
             var imageUrl = ""
 
+            imageUrl = "gs://deckvault-a0189.appspot.com/35.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card35 = CardClass(
+                    "Arthur",
+                    imageUrl.toString(),
+                    35,
+                    "Wizard's Apprentice",
+                    "Amethyst",
+                    mutableListOf("Dreamborn", "Hero", "Sorcerer"),
+                    1,
+                    3,
+                    "Whenever this character quests, you may return another chosen character of yours" +
+                        " to your hand to gain 2 lore.",
+                    3,
+                    false,
+                    1,
+                    "Hmm.. what spell should I try next?"
+                )
+                cardDataRef.child(card35.cardNumber.toString()).setValue(card35)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
+
             imageUrl = "gs://deckvault-a0189.appspot.com/52.png"
             addImage(imageUrl, { imageUrl ->
                 // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
@@ -267,6 +292,31 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     "It was turning out to be a bad hare day."
                 )
                 cardDataRef.child(card52.cardNumber.toString()).setValue(card52)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
+
+            imageUrl = "gs://deckvault-a0189.appspot.com/141.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card141 = CardClass(
+                    "Belle",
+                    imageUrl.toString(),
+                    141,
+                    "Inventive Engineer",
+                    "Sapphire",
+                    mutableListOf("Dreamborn", "Hero", "Princess", "Inventor"),
+                    2,
+                    3,
+                    "Whenever this character quests, you pay 1 ink less for the next item you play" +
+                            " this turn.",
+                    3,
+                    true,
+                    2,
+                    "A little ingenuity and a lot of heart will take you far in this world."
+                )
+                cardDataRef.child(card141.cardNumber.toString()).setValue(card141)
             }, { exception ->
                 // Handle failure in image upload or URL retrieval
                 Log.e("InitializeCards", "Image upload failed: ${exception.message}")
@@ -297,7 +347,32 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                 // Handle failure in image upload or URL retrieval
                 Log.e("InitializeCards", "Image upload failed: ${exception.message}")
             })
+
+            imageUrl = "gs://deckvault-a0189.appspot.com/193.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card193 = CardClass(
+                    "Robin Hood",
+                    imageUrl.toString(),
+                    193,
+                    "Capable Fighter",
+                    "Steel",
+                    mutableListOf("Dreamborn", "Hero"),
+                    1,
+                    3,
+                    "Deal 1 damage to chosen character.",
+                    2,
+                    false,
+                    1,
+                    "'Capable? You don't know the half of it.' - Little John"
+                )
+                cardDataRef.child(card193.cardNumber.toString()).setValue(card193)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
         }
+
 
         // Define a callback interface to handle success and failure cases
         interface CardDataCallback {
@@ -366,6 +441,10 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
     private val _isDeckDataReady = MutableLiveData<Boolean>()
     val isDeckDataReady: LiveData<Boolean>
         get() = _isDeckDataReady
+
+    fun setDeckDataReady(isReady: Boolean) {
+        _isDeckDataReady.value = isReady
+    }
 
     private var listener: ValueEventListener? = null
 
@@ -454,7 +533,8 @@ class DeckRepository(private val database: FirebaseDatabase, private val user: F
             .addOnSuccessListener {
                 // Increment the deck count after successfully adding the deck
                 incrementDeckCount()
-                // Handle successful addition of the deck
+                // Set isDeckDataReady to true after adding the deck
+                setDeckDataReady(true)
             }
             .addOnFailureListener { e ->
                 // Handle failure to add the deck

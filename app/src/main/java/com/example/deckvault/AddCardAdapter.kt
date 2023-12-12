@@ -38,7 +38,7 @@ class AddCardAdapter (
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
             val inflatedView: View = LayoutInflater.from(parent.context)
-                .inflate(R.layout.addcard_cardview, parent, false)
+                .inflate(R.layout.card_cardview, parent, false)
             return ItemViewHolder(inflatedView)
         }
 

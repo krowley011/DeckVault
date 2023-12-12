@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
@@ -153,10 +154,11 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
                     0,
                     cardList
                 )
-
+                dialog.dismiss()
+                Toast.makeText(requireContext(), "Deck added", Toast.LENGTH_SHORT).show()
+                // Isn't updating the recycler view after adding a deck
+                getDecks()
             }
-
-            dialog.dismiss()
         }
 
         deckRepo?.stopDeckListener()
