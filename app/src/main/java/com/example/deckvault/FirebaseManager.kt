@@ -260,7 +260,7 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     mutableListOf("Dreamborn", "Hero", "Sorcerer"),
                     1,
                     3,
-                    "Whenever this character quests, you may return another chosen character of yours" +
+                    "Student - Whenever this character quests, you may return another chosen character of yours" +
                         " to your hand to gain 2 lore.",
                     3,
                     false,
@@ -268,6 +268,31 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     "Hmm.. what spell should I try next?"
                 )
                 cardDataRef.child(card35.cardNumber.toString()).setValue(card35)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
+
+            imageUrl = "gs://deckvault-a0189.appspot.com/49.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card49 = CardClass(
+                    "Madam Mim",
+                    imageUrl.toString(),
+                    49,
+                    "Snake",
+                    "Amethyst",
+                    mutableListOf("Storyborn", "Villain", "Sorcerer"),
+                    3,
+                    3,
+                    "Just you wait - When you play this character, banish her or return another chosen" +
+                        " character of yours to your hand.",
+                    2,
+                    true,
+                    1,
+                    "I've got you rattled now!"
+                )
+                cardDataRef.child(card49.cardNumber.toString()).setValue(card49)
             }, { exception ->
                 // Handle failure in image upload or URL retrieval
                 Log.e("InitializeCards", "Image upload failed: ${exception.message}")
@@ -285,7 +310,7 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     mutableListOf("Storyborn", "Mentor", "Sorcerer"),
                     2,
                     3,
-                    "Hoppity Hip! When you play this character and when he leaves play, you may draw a card.",
+                    "Hoppity Hip! - When you play this character and when he leaves play, you may draw a card.",
                     4,
                     false,
                     1,
@@ -309,7 +334,7 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     mutableListOf("Dreamborn", "Hero", "Princess", "Inventor"),
                     2,
                     3,
-                    "Whenever this character quests, you pay 1 ink less for the next item you play" +
+                    "Tinker - Whenever this character quests, you pay 1 ink less for the next item you play" +
                             " this turn.",
                     3,
                     true,
@@ -317,6 +342,32 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
                     "A little ingenuity and a lot of heart will take you far in this world."
                 )
                 cardDataRef.child(card141.cardNumber.toString()).setValue(card141)
+            }, { exception ->
+                // Handle failure in image upload or URL retrieval
+                Log.e("InitializeCards", "Image upload failed: ${exception.message}")
+            })
+
+            imageUrl = "gs://deckvault-a0189.appspot.com/142.png"
+            addImage(imageUrl, { imageUrl ->
+                // Image uploaded successfully, use the imageUrl to initialize CardClass or perform other operations
+                val card142 = CardClass(
+                    "Belle",
+                    imageUrl.toString(),
+                    142,
+                    "Strange but Special",
+                    "Sapphire",
+                    mutableListOf("Storyborn", "Hero", "Princess"),
+                    2,
+                    4,
+                    "Read a book - During your turn, you may put an additional card from your hand into your" +
+                        " inkwell facedown." + "My favorite part! - While you have 10 or more cards in your inkwell, " +
+                        "this character gets +4 lore.",
+                    4,
+                    true,
+                    1,
+                    "Far-off places, daring sword fights, magic spells, a prince in disguise..."
+                )
+                cardDataRef.child(card142.cardNumber.toString()).setValue(card142)
             }, { exception ->
                 // Handle failure in image upload or URL retrieval
                 Log.e("InitializeCards", "Image upload failed: ${exception.message}")

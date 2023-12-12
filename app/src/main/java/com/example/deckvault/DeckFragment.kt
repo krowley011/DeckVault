@@ -84,8 +84,6 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
     // Determines which deck in the recycler view was clicked, saves the information about
     // the selected deck, and switches to a new fragment, passing the collected data
     override fun onDeckClick(position: Int) {
-        Log.d("DeckFragment", "Clicked on deck nat $position")
-
         val deckList = deckRepo.Decks
 
         if (position < deckList.size) {
@@ -146,6 +144,7 @@ class DeckFragment : Fragment(), DeckAdapter.OnDeckClickListener {
         addDeckButton.setOnClickListener {
             val deckName = deckNameInput.text.toString()
             val cardList: MutableList<CardClass> = mutableListOf()
+            // Need to add check if deck name already exists
             if (deckName.isNotEmpty()) {
                 // Create a new deck with the entered name and default values
                 deckRepo!!.addDeck(

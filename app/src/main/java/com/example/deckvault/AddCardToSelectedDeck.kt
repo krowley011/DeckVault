@@ -10,6 +10,7 @@ import android.view.Window
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
@@ -200,6 +201,7 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
                 addCard(card, viewLifecycleOwner)
             }
             dialog.dismiss() // Dismiss the dialog after adding the card
+            Toast.makeText(requireContext(), "Card added", Toast.LENGTH_SHORT).show()
         }
 
         return dialog
