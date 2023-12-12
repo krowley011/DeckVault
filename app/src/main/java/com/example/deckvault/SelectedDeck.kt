@@ -244,7 +244,6 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
     }
 
     override fun onCardClick(position: Int) {
-
         val clickedCard = selectedDeckRecyclerList[position]
         fetchSelectedCardDetails(clickedCard)
     }
@@ -255,20 +254,61 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
             .child("Decks").child(selectedDeckId).child("Cards")
 
         val valEventListener = object : ValueEventListener {
-            override fun onDataChange(cardSnapshot: DataSnapshot) {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
                 var selectedCard: CardClass? = null
 
-                for (cardDataSnapshot in cardSnapshot.children) {
-                    val card = cardDataSnapshot.getValue(CardClass::class.java)
-                    if (card != null) {
-                        if (card.cardNumber == clickedCard.cardNumber) {
-                            selectedCard = cardSnapshot.getValue(CardClass::class.java)
-                            break
+                for (cardSnapshot in dataSnapshot.children) {
+                    val cardNumber = cardSnapshot.child("cardNumber").getValue(Int::class.java)
+                    if (cardNumber == clickedCard.cardNumber) {
+
+                        val cardName =
+                            cardSnapshot.child("cardName").getValue(String::class.java) ?: ""
+                        val cardImage =
+                            cardSnapshot.child("cardImage").getValue(String::class.java) ?: ""
+                        val cardSubName =
+                            cardSnapshot.child("cardSubName").getValue(String::class.java) ?: ""
+                        val cardColor =
+                            cardSnapshot.child("cardColor").getValue(String::class.java) ?: ""
+                        val cardClassesSnapshot = cardSnapshot.child("cardClasses")
+
+                        val cardClasses = mutableListOf<String>()
+                        for (classSnapshot in cardClassesSnapshot.children) {
+                            val className = classSnapshot.getValue(String::class.java)
+                            className?.let {
+                                cardClasses.add(it)
+                            }
                         }
+
+                        val cardDamage = cardSnapshot.child("cardDamage").getValue(Int::class.java) ?: 0
+                        val cardDefense = cardSnapshot.child("cardDefense").getValue(Int::class.java) ?: 0
+                        val cardAction = cardSnapshot.child("cardAction").getValue(String::class.java) ?: ""
+                        val cardInk = cardSnapshot.child("cardInk").getValue(Int::class.java) ?: 0
+                        val cardInkable = cardSnapshot.child("cardInkable").getValue(Boolean::class.java) ?: true
+                        val cardLore = cardSnapshot.child("cardLore").getValue(Int::class.java) ?: 0
+                        val cardDescription = cardSnapshot.child("cardDescription").getValue(String::class.java) ?: ""
+
+
+                        // Create a CardClass object manually
+                        selectedCard = CardClass(
+                            cardName,
+                            cardImage,
+                            cardNumber,
+                            cardSubName,
+                            cardColor,
+                            cardClasses,
+                            cardDamage,
+                            cardDefense,
+                            cardAction,
+                            cardInk,
+                            cardInkable,
+                            cardLore,
+                            cardDescription
+                        )
+                        break
                     }
                 }
 
-                selectedCard?.let { card ->
+                selectedCard.let { card ->
                     // Bundle the card details
                     val bundle = Bundle()
                     bundle.putParcelable("selectedCard", card)
@@ -286,7 +326,7 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
 
             override fun onCancelled(databaseError: DatabaseError) {
                 // Handle errors
-                Log.e("SelectedDeck", "Error: ${databaseError.message}")
+                Log.e("SelectedDeck:FetchCardDetails", "Error: ${databaseError.message}")
             }
         }
 

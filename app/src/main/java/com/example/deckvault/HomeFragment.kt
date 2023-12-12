@@ -102,7 +102,8 @@ class HomeFragment : Fragment(), RecentCardAdapter.OnCardClickListener {
                             RecentCardRecyclerData(
                                 recentCards.cardImage,
                                 recentCards.cardName,
-                                recentCards.cardSubName
+                                recentCards.cardSubName,
+                                recentCards.cardNumber
                             )
                         )
                     }
@@ -127,14 +128,57 @@ class HomeFragment : Fragment(), RecentCardAdapter.OnCardClickListener {
                 var selectedCard: CardClass? = null
 
                 for (cardSnapshot in dataSnapshot.children) {
-                    val cardNumber = cardSnapshot.child("Card Number").value as? Int ?: 0
+                    val cardNumber = cardSnapshot.child("Card Number").getValue(Int::class.java)
                     if (cardNumber == clickedCard.cardNumber) {
-                        selectedCard = cardSnapshot.getValue(CardClass::class.java)
+
+                        val cardName =
+                            cardSnapshot.child("Card Name").getValue(String::class.java) ?: ""
+                        val cardImage =
+                            cardSnapshot.child("Card Image").getValue(String::class.java) ?: ""
+                        val cardSubName =
+                            cardSnapshot.child("Card SubName").getValue(String::class.java) ?: ""
+                        val cardColor =
+                            cardSnapshot.child("Card Color").getValue(String::class.java) ?: ""
+                        val cardClassesSnapshot = cardSnapshot.child("Card Classes")
+
+                        val cardClasses = mutableListOf<String>()
+                        for (classSnapshot in cardClassesSnapshot.children) {
+                            val className = classSnapshot.getValue(String::class.java)
+                            className?.let {
+                                cardClasses.add(it)
+                            }
+                        }
+
+                        val cardDamage = cardSnapshot.child("Card Damage").getValue(Int::class.java) ?: 0
+                        val cardDefense = cardSnapshot.child("Card Defense").getValue(Int::class.java) ?: 0
+                        val cardAction = cardSnapshot.child("Card Action").getValue(String::class.java) ?: ""
+                        val cardInk = cardSnapshot.child("Card Ink").getValue(Int::class.java) ?: 0
+                        val cardInkable = cardSnapshot.child("Card Inkable").getValue(Boolean::class.java) ?: true
+                        val cardLore = cardSnapshot.child("Card Lore").getValue(Int::class.java) ?: 0
+                        val cardDescription = cardSnapshot.child("Card Description").getValue(String::class.java) ?: ""
+
+
+                        // Create a CardClass object manually
+                        selectedCard = CardClass(
+                            cardName,
+                            cardImage,
+                            cardNumber,
+                            cardSubName,
+                            cardColor,
+                            cardClasses,
+                            cardDamage,
+                            cardDefense,
+                            cardAction,
+                            cardInk,
+                            cardInkable,
+                            cardLore,
+                            cardDescription
+                        )
                         break
                     }
                 }
 
-                selectedCard?.let { card ->
+                selectedCard.let { card ->
                     // Bundle the card details
                     val bundle = Bundle()
                     bundle.putParcelable("selectedCard", card)

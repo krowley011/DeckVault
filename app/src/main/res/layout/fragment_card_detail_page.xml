@@ -8,6 +8,7 @@
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cardPage_contraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#03A9F4">
@@ -18,14 +19,12 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintTop_toBottomOf="@+id/cardPage_toolbar"
             app:srcCompat="@drawable/rectangle" />
 
         <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
+            android:id="@+id/cardPage_toolbar"
             android:layout_width="0dp"
             android:layout_height="78dp"
             android:background="#03A9F4"
@@ -37,22 +36,24 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageButton
-            android:id="@+id/imageButton"
+            android:id="@+id/cardPage_BackBTN"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="24dp"
             android:background="#FFFFFF"
             android:backgroundTint="#00FFFFFF"
-            android:scaleX="2.25"
-            android:scaleY="2.25"
+            android:contentDescription="Back"
+            android:scaleX="2.5"
+            android:scaleY="2.5"
             android:src="@drawable/baseline_arrow_back_24"
-            android:tint="#FFFFFF"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FFFFFF"
+            tools:ignore="TouchTargetSizeCheck" />
 
         <TextView
-            android:id="@+id/cardPage_NameTV"
+            android:id="@+id/cardPage_NameTopTV"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Card Name"
@@ -60,16 +61,18 @@
             android:textSize="40sp"
             app:layout_constraintBottom_toTopOf="@+id/rectangle"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.496"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/toolbar" />
+            app:layout_constraintTop_toTopOf="@+id/cardPage_toolbar" />
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
             android:fillViewport="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="@+id/rectangle"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/rectangle">
 
@@ -99,11 +102,12 @@
                 </androidx.cardview.widget.CardView>
 
                 <TextView
-                    android:id="@+id/cardPage_NameBottomTV"
+                    android:id="@+id/cardPage_NameTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Card Name"
+                    android:textAlignment="center"
                     android:textSize="30sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -115,7 +119,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:layout_marginEnd="16dp"
+                    android:layout_marginEnd="24dp"
                     android:background="#00FFFFFF"
                     android:contentDescription="Options"
                     android:scaleX="2"
@@ -130,10 +134,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="Sub Name"
+                    android:textAlignment="center"
                     android:textSize="25sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardPage_NameBottomTV" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_NameTV" />
 
                 <TextView
                     android:id="@+id/cardPage_ClassesTV"
@@ -141,6 +146,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Classes"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.498"
@@ -169,7 +175,7 @@
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardPage_ClassesTV" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_ActionTV" />
 
                 <View
                     android:id="@+id/divider3"
@@ -190,6 +196,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Description"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
@@ -211,13 +218,13 @@
                     android:id="@+id/dividerStats"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="24dp"
                     android:text="Stats"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardPage_DescriptionTV" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_ClassesTV" />
 
                 <View
                     android:id="@+id/divider5"
@@ -237,21 +244,35 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Inkable - Ink"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/dividerStats" />
 
                 <TextView
-                    android:id="@+id/cardPage_AttackTV"
+                    android:id="@+id/cardPage_LoreTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Attack Points"
+                    android:text="Lore"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/cardPage_InkableTV" />
+
+                <TextView
+                    android:id="@+id/cardPage_DamageTV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Defense Points"
+                    android:textAlignment="center"
+                    android:textSize="20sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_LoreTV" />
 
                 <TextView
                     android:id="@+id/cardPage_DefenseTV"
@@ -259,10 +280,11 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Defense Points"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardPage_AttackTV" />
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_DamageTV" />
 
                 <View
                     android:id="@+id/divider6"
@@ -271,10 +293,10 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginEnd="8dp"
                     android:background="@color/blue"
-                    app:layout_constraintBottom_toBottomOf="@+id/dividerAbility"
-                    app:layout_constraintEnd_toStartOf="@+id/dividerAbility"
+                    app:layout_constraintBottom_toBottomOf="@+id/dividerAction"
+                    app:layout_constraintEnd_toStartOf="@+id/dividerAction"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="@+id/dividerAbility" />
+                    app:layout_constraintTop_toTopOf="@+id/dividerAction" />
 
                 <View
                     android:id="@+id/divider7"
@@ -283,17 +305,17 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="16dp"
                     android:background="@color/blue"
-                    app:layout_constraintBottom_toBottomOf="@+id/dividerAbility"
+                    app:layout_constraintBottom_toBottomOf="@+id/dividerAction"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/dividerAbility"
-                    app:layout_constraintTop_toTopOf="@+id/dividerAbility" />
+                    app:layout_constraintStart_toEndOf="@+id/dividerAction"
+                    app:layout_constraintTop_toTopOf="@+id/dividerAction" />
 
                 <TextView
-                    android:id="@+id/dividerAbility"
+                    android:id="@+id/dividerAction"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Ability"
+                    android:text="Action"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -301,15 +323,30 @@
                     app:layout_constraintTop_toBottomOf="@+id/cardPage_DefenseTV" />
 
                 <TextView
-                    android:id="@+id/cardPage_AbilityTV"
+                    android:id="@+id/cardPage_ActionTV"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Ability"
+                    android:text="Action"
+                    android:textAlignment="center"
                     android:textSize="20sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/dividerAbility" />
+                    app:layout_constraintTop_toBottomOf="@+id/dividerAction" />
+
+                <Button
+                    android:id="@+id/cardPage_deleteBTN"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:backgroundTint="#ED2A2A"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="DELETE"
+                    android:textSize="20sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardPage_DescriptionTV" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
