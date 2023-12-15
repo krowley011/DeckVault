@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -61,8 +62,18 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val rootView = inflater.inflate(R.layout.fragment_add_card_to_selected_deck, container, false)
+
+        // Setting up back button
+        val backButton = rootView.findViewById<ImageButton>(R.id.addCard_BackBTN)
+
+        // Set OnClickListener for the back button
+        backButton.setOnClickListener {
+            // Navigate back to the previous fragment
+            activity?.onBackPressed()
+        }
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_add_card_to_selected_deck, container, false)
+        return rootView
     }
 
     // Search listener for search bar, updates as the user types in a card name or subname

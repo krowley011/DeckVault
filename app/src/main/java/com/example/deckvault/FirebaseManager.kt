@@ -128,9 +128,9 @@ class CardRepository(private val database: FirebaseDatabase, private val user: F
             fetchCardData(deckId)
         }
 
-        fun removeCard(card: CardClass, owner: LifecycleOwner) {
+        fun removeCard(card: CardClass, deckId: String, owner: LifecycleOwner) {
             val database = FirebaseDatabase.getInstance()
-            val cardRef = database.reference.child("UserData").child(user.uid).child("Cards")
+            val cardRef = database.reference.child("UserData").child(user.uid).child("Decks").child(deckId).child("Cards")
                 .child(card.cardNumber.toString())
             cardRef.removeValue()
 

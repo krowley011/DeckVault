@@ -6,15 +6,26 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LifecycleOwner
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.squareup.picasso.Picasso
 
 class CardDetailPage : Fragment() {
+    private lateinit var database: FirebaseDatabase
+    private var auth = FirebaseAuth.getInstance()
+    private var currUser = auth.currentUser
+    private lateinit var deckId: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +138,102 @@ class CardDetailPage : Fragment() {
             activity?.onBackPressed()
         }
 
+        // Set up delete functions
+        val cardId = selectedCard.cardNumber
+        val cardRef = FirebaseDatabase.getInstance().getReference("UserData").child(currUser!!.uid).child("Decks")
+
+        cardRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var deckId: String? = null // Initialize deckId as nullable
+
+                // Retrieve the deckId for the deck the card is in
+                for (childSnapshot in snapshot.children) {
+                    val cardsSnapshot = childSnapshot.child("Cards")
+                    for (cardSnapshot in cardsSnapshot.children) {
+                        val cardKey = cardSnapshot.key
+                        if (cardKey == cardId.toString()) {
+                            deckId = childSnapshot.key // Store the deckId where the card is found
+                            break
+                        }
+                    }
+                    if (deckId != null) break // Break the outer loop once deckId is found
+                }
+
+                // Check if deckId is retrieved and proceed with deletion
+                if (deckId != null) {
+                    // Setting up delete button
+                    val deleteButton = rootView.findViewById<Button>(R.id.cardPage_deleteBTN)
+
+                    deleteButton.setOnClickListener {
+                        // Delete the card
+                        removeCard(selectedCard, deckId!!, viewLifecycleOwner)
+                        // Navigate back to the previous fragment
+                        activity?.onBackPressed()
+                    }
+                } else {
+                    Log.e("CardDetailPage", "DeckId not found for the card")
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+                Log.e("CardDetailPage", "Cannot retrieve deckId")
+            }
+        })
+
         return rootView
     }
 
+    private fun removeCard(card: CardClass, deckId: String, owner: LifecycleOwner) {
+        val database = FirebaseDatabase.getInstance()
+        val cardRef = database.reference.child("UserData").child(currUser!!.uid).child("Decks")
+            .child(deckId).child("Cards")
+            .child(card.cardNumber.toString())
+
+        // Reference to user's data
+        val userDataRef = database.getReference("UserData").child(currUser!!.uid)
+
+        // update user's card count
+        userDataRef.child("cardCount").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var cardCount = (snapshot.value as? Long ?: 0).toInt()
+                if (cardCount > 0) {
+                    cardCount--
+                }
+
+                userDataRef.child("cardCount").setValue(cardCount)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+                Log.e("CardDetailPage", "Failed to update card count")
+            }
+        })
+
+        // Reference to the user's recent card list and remove the card
+        val recentCardsRef = userDataRef.child("Recent Cards")
+        recentCardsRef.child(card.cardNumber.toString()).removeValue()
+
+        // Update deck's card count
+        val deckRef = userDataRef.child("Decks").child(deckId)
+        deckRef.child("deckCardCount").addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                var deckCardCount = snapshot.getValue(Int::class.java) ?: 0 // Get current deck's card count
+                if (deckCardCount > 0) {
+                    deckCardCount-- // Decrement deck's card count
+                }
+
+                // Update deck's card count
+                deckRef.child("deckCardCount").setValue(deckCardCount)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                // Handle error
+                Log.e("CardDetailPage", "Failed to retrieve deck's card count")
+            }
+        })
+
+        // Remove the card
+        cardRef.removeValue()
+    }
 }
