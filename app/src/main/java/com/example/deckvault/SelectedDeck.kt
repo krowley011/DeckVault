@@ -43,6 +43,20 @@ class SelectedDeck : Fragment(), SelectedDeckAdapter.OnCardClickListener {
         val database = FirebaseDatabase.getInstance()
         val deckRef = database.getReference("UserData").child(currUser!!.uid).child("Decks")
 
+        // Update deck name on top of page with selected decks name
+        val selectedDeckName = selectedDeck!!.deckName
+        val selectedDeckNameTV = rootView.findViewById<TextView>(R.id.selectedDeckNameTV)
+        selectedDeckNameTV.text = selectedDeckName
+
+        // Setting up back button
+        val backButton = rootView.findViewById<ImageButton>(R.id.selectedDeck_BackBTN)
+
+        // Set OnClickListener for the back button
+        backButton.setOnClickListener {
+            // Navigate back to the previous fragment
+            activity?.onBackPressed()
+        }
+
         val valEventListener = object : ValueEventListener {
             override fun onDataChange(dataSnapshot: DataSnapshot) {
                 // var selectedDeckId: String? = null

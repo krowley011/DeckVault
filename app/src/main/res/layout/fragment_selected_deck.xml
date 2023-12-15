@@ -49,6 +49,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/toolbar" />
 
+        <ImageButton
+            android:id="@+id/selectedDeck_BackBTN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:background="#FFFFFF"
+            android:backgroundTint="#00FFFFFF"
+            android:contentDescription="Back"
+            android:scaleX="2.5"
+            android:scaleY="2.5"
+            android:src="@drawable/baseline_arrow_back_24"
+            app:layout_constraintBottom_toTopOf="@+id/rectangle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="#FFFFFF"
+            tools:ignore="TouchTargetSizeCheck" />
+
         <TextView
             android:id="@+id/selectedDeckCardCountTV"
             android:layout_width="wrap_content"

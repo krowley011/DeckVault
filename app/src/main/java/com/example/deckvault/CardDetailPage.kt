@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -95,7 +96,7 @@ class CardDetailPage : Fragment() {
 
         val classList = selectedCard.cardClasses.toMutableList()
         val cardClassesTV = rootView.findViewById<TextView>(R.id.cardPage_ClassesTV)
-        cardClassesTV.text = classList.joinToString { " · " }
+        cardClassesTV.text = classList.joinToString(separator = " - ")
 
         val cardDamageTV = rootView.findViewById<TextView>(R.id.cardPage_DamageTV)
         cardDamageTV.text = "Damage - " + selectedCard.cardDamage.toString()
@@ -116,6 +117,15 @@ class CardDetailPage : Fragment() {
         cardLoreTV.text = selectedCard.cardLore.toString() + " Lore"
         val cardDescriptionTV = rootView.findViewById<TextView>(R.id.cardPage_DescriptionTV)
         cardDescriptionTV.text = selectedCard.cardDescription
+
+        // Setting up back button
+        val backButton = rootView.findViewById<ImageButton>(R.id.cardPage_BackBTN)
+
+        // Set OnClickListener for the back button
+        backButton.setOnClickListener {
+            // Navigate back to the previous fragment
+            activity?.onBackPressed()
+        }
 
         return rootView
     }
