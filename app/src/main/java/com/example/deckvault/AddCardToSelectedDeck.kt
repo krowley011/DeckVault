@@ -65,13 +65,14 @@ class AddCardToSelectedDeck : Fragment(), AddCardAdapter.OnCardClickListener {
         val rootView = inflater.inflate(R.layout.fragment_add_card_to_selected_deck, container, false)
 
         // Setting up back button
-        val backButton = rootView.findViewById<ImageButton>(R.id.addCard_BackBTN)
+        val addCardBackBTN = rootView.findViewById<ImageButton>(R.id.addCard_BackBTN)
 
         // Set OnClickListener for the back button
-        backButton.setOnClickListener {
+        addCardBackBTN.setOnClickListener {
             // Navigate back to the previous fragment
             activity?.onBackPressed()
         }
+
         // Inflate the layout for this fragment
         return rootView
     }

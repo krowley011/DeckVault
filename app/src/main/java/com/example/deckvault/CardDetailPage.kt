@@ -26,6 +26,7 @@ class CardDetailPage : Fragment() {
     private var auth = FirebaseAuth.getInstance()
     private var currUser = auth.currentUser
     private lateinit var deckId: String
+    private lateinit var selectedCard: CardClass
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +43,7 @@ class CardDetailPage : Fragment() {
 
         // Retrieve bundled data
         val bundle = arguments
-        val selectedCard = bundle?.getParcelable<CardClass>("selectedCard")
+        selectedCard = bundle?.getParcelable("selectedCard")!!
 
         // Assign values from bundle
         selectedCard?.let {
