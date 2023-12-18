@@ -26,7 +26,7 @@ class CardDetailPage : Fragment() {
     private var auth = FirebaseAuth.getInstance()
     private var currUser = auth.currentUser
     private lateinit var deckId: String
-    private lateinit var selectedCard: CardClass
+    private var selectedCard: CardClass? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +43,8 @@ class CardDetailPage : Fragment() {
 
         // Retrieve bundled data
         val bundle = arguments
-        selectedCard = bundle?.getParcelable("selectedCard")!!
+        selectedCard = bundle?.getParcelable("selectedCard")
+
 
         // Assign values from bundle
         selectedCard?.let {
@@ -66,11 +67,11 @@ class CardDetailPage : Fragment() {
         val cardNameTopTV = rootView.findViewById<TextView>(R.id.cardPage_NameTopTV)
         cardNameTopTV.text = selectedCard!!.cardName
         val cardNameTV = rootView.findViewById<TextView>(R.id.cardPage_NameTV)
-        cardNameTV.text = selectedCard.cardName
+        cardNameTV.text = selectedCard!!.cardName
         val cardImageIV = rootView.findViewById<ImageView>(R.id.cardPage_Image)
 
         // Load image using Picasso from Firebase Storage URL into the ImageView
-        val imageUrl = selectedCard.cardImage
+        val imageUrl = selectedCard!!.cardImage
 
         if (!imageUrl.isNullOrEmpty()) {
             Picasso.get().load(imageUrl).into(cardImageIV)
@@ -86,7 +87,7 @@ class CardDetailPage : Fragment() {
         val cardPageToolbar = rootView.findViewById<androidx.appcompat.widget.Toolbar>(R.id.cardPage_toolbar)
 
         // Map card colors to their respective color resources
-        val colorRes = when (selectedCard.cardColor) { // Replace this with the actual color value
+        val colorRes = when (selectedCard?.cardColor) { // Replace this with the actual color value
             "Steel" -> R.color.steel
             "Amethyst" -> R.color.amethyst
             "Sapphire" -> R.color.sapphire
@@ -104,31 +105,31 @@ class CardDetailPage : Fragment() {
 
 
         val cardSubNameTV = rootView.findViewById<TextView>(R.id.cardPage_SubnameTV)
-        cardSubNameTV.text = selectedCard.cardSubName
+        cardSubNameTV.text = selectedCard!!.cardSubName
 
-        val classList = selectedCard.cardClasses.toMutableList()
+        val classList = selectedCard!!.cardClasses.toMutableList()
         val cardClassesTV = rootView.findViewById<TextView>(R.id.cardPage_ClassesTV)
         cardClassesTV.text = classList.joinToString(separator = " - ")
 
         val cardDamageTV = rootView.findViewById<TextView>(R.id.cardPage_DamageTV)
-        cardDamageTV.text = "Damage - " + selectedCard.cardDamage.toString()
+        cardDamageTV.text = "Damage - " + selectedCard?.cardDamage.toString()
         val cardDefenseTV =  rootView.findViewById<TextView>(R.id.cardPage_DefenseTV)
-        cardDefenseTV.text = "Defense - " + selectedCard.cardDefense.toString()
+        cardDefenseTV.text = "Defense - " + selectedCard?.cardDefense.toString()
         val cardActionTV = rootView.findViewById<TextView>(R.id.cardPage_ActionTV)
-        cardActionTV.text = selectedCard.cardAction
+        cardActionTV.text = selectedCard!!.cardAction
 
         // Change text based on if inkable or not
         val cardInkableTV = rootView.findViewById<TextView>(R.id.cardPage_InkableTV)
-        if (selectedCard.cardInkable) {
-            cardInkableTV.text = "Inkable - " + selectedCard.cardInk.toString()+ " Ink Cost"
+        if (selectedCard!!.cardInkable) {
+            cardInkableTV.text = "Inkable - " + selectedCard?.cardInk.toString()+ " Ink Cost"
         } else {
-            cardInkableTV.text = "Uninkable - " + selectedCard.cardInk.toString() + " Ink Cost"
+            cardInkableTV.text = "Uninkable - " + selectedCard?.cardInk.toString() + " Ink Cost"
         }
 
         val cardLoreTV = rootView.findViewById<TextView>(R.id.cardPage_LoreTV)
-        cardLoreTV.text = selectedCard.cardLore.toString() + " Lore"
+        cardLoreTV.text = selectedCard!!.cardLore.toString() + " Lore"
         val cardDescriptionTV = rootView.findViewById<TextView>(R.id.cardPage_DescriptionTV)
-        cardDescriptionTV.text = selectedCard.cardDescription
+        cardDescriptionTV.text = selectedCard!!.cardDescription
 
         // Setting up back button
         val backButton = rootView.findViewById<ImageButton>(R.id.cardPage_BackBTN)
@@ -140,12 +141,12 @@ class CardDetailPage : Fragment() {
         }
 
         // Set up delete functions
-        val cardId = selectedCard.cardNumber
+        val cardId = selectedCard!!.cardNumber
         val cardRef = FirebaseDatabase.getInstance().getReference("UserData").child(currUser!!.uid).child("Decks")
 
         cardRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                var deckId: String? = null // Initialize deckId as nullable
+                deckId = null.toString() // Initialize deckId as nullable
 
                 // Retrieve the deckId for the deck the card is in
                 for (childSnapshot in snapshot.children) {
@@ -153,26 +154,12 @@ class CardDetailPage : Fragment() {
                     for (cardSnapshot in cardsSnapshot.children) {
                         val cardKey = cardSnapshot.key
                         if (cardKey == cardId.toString()) {
-                            deckId = childSnapshot.key // Store the deckId where the card is found
+                            deckId =
+                                childSnapshot.key.toString() // Store the deckId where the card is found
                             break
                         }
                     }
                     if (deckId != null) break // Break the outer loop once deckId is found
-                }
-
-                // Check if deckId is retrieved and proceed with deletion
-                if (deckId != null) {
-                    // Setting up delete button
-                    val deleteButton = rootView.findViewById<Button>(R.id.cardPage_deleteBTN)
-
-                    deleteButton.setOnClickListener {
-                        // Delete the card
-                        removeCard(selectedCard, deckId!!, viewLifecycleOwner)
-                        // Navigate back to the previous fragment
-                        activity?.onBackPressed()
-                    }
-                } else {
-                    Log.e("CardDetailPage", "DeckId not found for the card")
                 }
             }
 
@@ -182,17 +169,33 @@ class CardDetailPage : Fragment() {
             }
         })
 
+        // Setting up delete button
+        val deleteButton = rootView.findViewById<Button>(R.id.cardPage_deleteBTN)
+
+        deleteButton.setOnClickListener {
+            selectedCard?.let { card ->
+                removeCard(card, deckId, viewLifecycleOwner) { success ->
+                    if (success) {
+                        // Return to previous page
+                        requireFragmentManager().popBackStackImmediate();
+                    } else {
+                        Log.e("CardDetailPage", "Failed to delete card")
+                    }
+                }
+            } ?: run {
+                Log.e("CardDetailPage", "Selected card is null")
+            }
+        }
+
         return rootView
     }
 
-    private fun removeCard(card: CardClass, deckId: String, owner: LifecycleOwner) {
+    private fun removeCard(card: CardClass, deckId: String, owner: LifecycleOwner, callback: (Boolean) -> Unit) {
         val database = FirebaseDatabase.getInstance()
+        val userDataRef = database.getReference("UserData").child(currUser!!.uid)
         val cardRef = database.reference.child("UserData").child(currUser!!.uid).child("Decks")
             .child(deckId).child("Cards")
             .child(card.cardNumber.toString())
-
-        // Reference to user's data
-        val userDataRef = database.getReference("UserData").child(currUser!!.uid)
 
         // update user's card count
         userDataRef.child("cardCount").addListenerForSingleValueEvent(object : ValueEventListener {
@@ -235,6 +238,13 @@ class CardDetailPage : Fragment() {
         })
 
         // Remove the card
-        cardRef.removeValue()
+        cardRef.removeValue().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                callback(true) // Deletion successful
+            } else {
+                Log.e("CardDetailPage", "Failed to delete card")
+                callback(false) // Deletion failed
+            }
+        }
     }
 }
